@@ -35,8 +35,9 @@
    fixture (love.physics.newFixture body shape)
    anim (anim8.newAnimation (: grids.doughnut :getFrames "1-4" 1) 0.1)
  ]
-  (: body :applyLinearImpulse -16 -20)
+  (: body :applyLinearImpulse -8 -10)
   (: fixture :setUserData "ball")
+  (: body :setAngularVelocity 0.1)
   { "body" body "shape" shape "fixture" fixture "anim" anim "sheet" sheets.doughnut}))
 
 (defn beginContact [a b coll]
@@ -116,11 +117,18 @@
 
   (love.graphics.polygon "fill" (: ground-body :getWorldPoints (: ground-shape :getPoints)))
 
+
   (love.graphics.setColor 1 1 1)
 
   (each [key value (pairs balls)]
     (: value.anim :draw value.sheet 
-      (- (: value.body :getX) 8) (- (: value.body :getY) 8)))
+      (: value.body :getX)
+      (: value.body :getY)
+      (: value.body :getAngle)
+      1
+      1
+      8
+      8))
 
   ; (: animation :draw sheet (: ball-body :getX) (: ball-body :getY))
 

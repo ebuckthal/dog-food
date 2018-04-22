@@ -16,6 +16,13 @@
 (var ground-shape nil)
 (var ground-fixture nil)
 
+(var dog-body nil)
+(var dog-shape nil)
+(var dog-fixture nil)
+
+(defn set-angle [body angleDelta]
+  (: body :setAngle (+ (: body :getAngle) angleDelta)))
+
 (defn new-ball []
  (let [
    body (love.physics.newBody world 300 300 "dynamic")
@@ -31,7 +38,7 @@
         a-data (: a :getUserData)
         b-body (: b :getBody)
         b-data (: b :getUserData)]
-    (if 
+    (if
       (and (= "ball" b-data) (= "ground" a-data))
       (: b-body :setUserData true))))
 
@@ -48,6 +55,10 @@
   (set ground-shape (love.physics.newRectangleShape 800 50))
   (set ground-fixture (love.physics.newFixture ground-body ground-shape))
   (: ground-fixture :setUserData "ground")
+
+  (set dog-body (love.physics.newBody world 100 200 "kinematic"))
+  (set dog-shape (love.physics.newRectangleShape 100 50))
+  (set dog-fixture (love.physics.newFixture dog-body dog-shape))
 
   (set canvas (love.graphics.newCanvas 800 800))
   (: canvas :setFilter "nearest" "nearest")
@@ -76,18 +87,27 @@
       ; is this cool? deletion in iteration
       (table.remove balls key)))
 
-  (if (love.keyboard.isDown "a") (table.insert balls (new-ball)))
-)
+  (when (love.keyboard.isDown "space") (table.insert balls (new-ball)))
+  (when (love.keyboard.isDown "w") (: dog-body :setY (+ (: dog-body :getY) -3)))
+  (when (love.keyboard.isDown "a") (: dog-body :setX (+ (: dog-body :getX) -3)))
+  (when (love.keyboard.isDown "s") (: dog-body :setY (+ (: dog-body :getY) 3)))
+  (when (love.keyboard.isDown "d") (: dog-body :setX (+ (: dog-body :getX) 3)))
+  (when (love.keyboard.isDown "q") (set-angle dog-body -0.1))
+  (when (love.keyboard.isDown "e") (set-angle dog-body 0.1)))
 
 (defn love.draw []
   (love.graphics.setCanvas canvas)
   (love.graphics.clear)
 
-  (love.graphics.setColor 72 160 14)
+  (love.graphics.setColor 0.5 0.8 0.3)
+
+  (love.graphics.polygon
+   "fill"
+   (: dog-body :getWorldPoints (: dog-shape :getPoints)))
 
   (each [key value (pairs balls)]
-    (love.graphics.circle 
-      "fill" 
+    (love.graphics.circle
+      "fill"
       (: value.body :getX)
       (: value.body :getY)
       (: value.shape :getRadius)))
@@ -99,4 +119,3 @@
   (love.graphics.setCanvas)
   (love.graphics.draw canvas 0 0 0 scale scale)
 )
-

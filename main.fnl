@@ -2,6 +2,16 @@
 (local view (require "fennelview"))
 (local scale 2)
 
+(local sheets {
+ "doughnut" (love.graphics.newImage "assets/doughnut.png")
+})
+
+(local grids {
+ "doughnut" (anim8.newGrid 16 16 64 16)
+})
+
+(var anim {})
+
 (var canvas nil)
 (var world nil)
 
@@ -21,12 +31,13 @@
 (defn new-ball []
  (let [
    body (love.physics.newBody world 300 300 "dynamic")
-   shape (love.physics.newCircleShape 20)
+   shape (love.physics.newCircleShape 8)
    fixture (love.physics.newFixture body shape)
+   anim (anim8.newAnimation (: grids.doughnut :getFrames "1-4" 1) 0.1)
  ]
-  (: body :applyLinearImpulse -80 -100)
+  (: body :applyLinearImpulse -16 -20)
   (: fixture :setUserData "ball")
-  { "body" body "shape" shape "fixture" fixture }))
+  { "body" body "shape" shape "fixture" fixture "anim" anim "sheet" sheets.doughnut}))
 
 (defn beginContact [a b coll]
   (let [a-body (: a :getBody)
@@ -57,9 +68,11 @@
 
   (set canvas (love.graphics.newCanvas 800 800))
   (: canvas :setFilter "nearest" "nearest")
+
   (global sheet (love.graphics.newImage "sheet2.png"))
   (global g (anim8.newGrid 37 39 740 39))
   (global animation (anim8.newAnimation (: g :getFrames "1-20" 1) 0.1))
+
   (let [code (love.filesystem.read "stdio.fnl")
         data (love.filesystem.newFileData (fennel.compileString code) "io")
         thread (love.thread.newThread data)
@@ -77,6 +90,7 @@
   (: animation :update dt)
 
   (each [key value (pairs balls)]
+    (: value.anim :update dt)
     (when (= true (: value.body :getUserData))
       (: value.body :destroy)
       ; is this cool? deletion in iteration
@@ -100,14 +114,13 @@
    "fill"
    (: dog-body :getWorldPoints (: dog-shape :getPoints)))
 
-  (each [key value (pairs balls)]
-    (love.graphics.circle
-      "fill"
-      (: value.body :getX)
-      (: value.body :getY)
-      (: value.shape :getRadius)))
-
   (love.graphics.polygon "fill" (: ground-body :getWorldPoints (: ground-shape :getPoints)))
+
+  (love.graphics.setColor 1 1 1)
+
+  (each [key value (pairs balls)]
+    (: value.anim :draw value.sheet 
+      (- (: value.body :getX) 8) (- (: value.body :getY) 8)))
 
   ; (: animation :draw sheet (: ball-body :getX) (: ball-body :getY))
 

@@ -6,11 +6,6 @@
 (var world nil)
 
 (var balls [])
-(var to-destroy [])
-
-(var ball-body nil)
-(var ball-shape nil)
-(var ball-fixture nil)
 
 (var ground-body nil)
 (var ground-shape nil)

@@ -12,6 +12,18 @@
  "dog" (anim8.newGrid 48 48 (: sheets.dog :getWidth) (: sheets.dog :getHeight))
 })
 
+(global dog
+       {"body" nil
+        "shape" nil
+        "fixture" nil
+        "state" "closed"
+        "anim" (anim8.newAnimation (: grids.dog :getFrames "1-5" 1 1 1) 0.1)
+        "paused" false})
+
+(defn flip-dog-state []
+  (let [new-state (if (= dog.state "closed") "open" "closed")]
+    (tset dog "state" new-state)))
+
 (var anim {})
 
 (var canvas nil)
@@ -23,16 +35,12 @@
 (var ground-shape nil)
 (var ground-fixture nil)
 
-(var dog-body nil)
-(var dog-shape nil)
-(var dog-fixture nil)
-(var dog-anim (anim8.newAnimation (: grids.dog :getFrames "1-5" 1) 0.2))
-
 (defn bounded [val ?min ?max]
-  (if (> val ?max) ?max
-      (< val ?min) ?min
+  (if (and (~= ?max nil) (> val ?max)) ?max
+      (and (~= ?min nil) (< val ?min)) ?min
       val))
 
+;sets angle of a body
 (defn set-angle [body angleDelta ?minAngle ?maxAngle]
   (let [oldAngle (: body :getAngle)
         newAngle (bounded (+ oldAngle angleDelta)
@@ -70,6 +78,12 @@
   (set world (love.physics.newWorld 0 (* 9.81 64) true))
   (: world :setCallbacks beginContact nil nil nil)
 
+  ; one shot keypresses defined here
+  (tset love "keypressed"
+        (fn [key isRepeat]
+          (if (= key "return")
+              (flip-dog-state))))
+
   (table.insert balls (new-ball))
 
   (set ground-body (love.physics.newBody world (/ 800 2) (/ 750 2) "static"))
@@ -77,9 +91,9 @@
   (set ground-fixture (love.physics.newFixture ground-body ground-shape))
   (: ground-fixture :setUserData "ground")
 
-  (set dog-body (love.physics.newBody world 100 200 "kinematic"))
-  (set dog-shape (love.physics.newRectangleShape 100 50))
-  (set dog-fixture (love.physics.newFixture dog-body dog-shape))
+  (tset dog "body" (love.physics.newBody world 100 200 "kinematic"))
+  (tset dog "shape" (love.physics.newRectangleShape 100 50))
+  (tset dog "fixture" (love.physics.newFixture dog.body dog.shape))
 
   (set canvas (love.graphics.newCanvas 800 800))
   (: canvas :setFilter "nearest" "nearest")
@@ -104,7 +118,11 @@
   (: world :update dt)
 
   ;(: animation :update dt)
-  (: dog-anim :update dt)
+  (if (= true dog.paused)
+      (: dog.anim :pause)
+      (: dog.anim :resume))
+
+  (: dog.anim :update dt)
 
   (each [key value (pairs balls)]
     (: value.anim :update dt)
@@ -114,26 +132,28 @@
       (table.remove balls key)))
 
   (when (love.keyboard.isDown "space") (table.insert balls (new-ball)))
-  (when (love.keyboard.isDown "w") (: dog-body :setY (+ (: dog-body :getY) -3)))
-  (when (love.keyboard.isDown "a") (: dog-body :setX (+ (: dog-body :getX) -3)))
-  (when (love.keyboard.isDown "s") (: dog-body :setY (+ (: dog-body :getY) 3)))
-  (when (love.keyboard.isDown "d") (: dog-body :setX (+ (: dog-body :getX) 3)))
-  (when (love.keyboard.isDown "q") (set-angle dog-body -0.1 -1 1))
-  (when (love.keyboard.isDown "e") (set-angle dog-body 0.1 -1 1)))
+  (when (love.keyboard.isDown "w") (: dog.body :setY (+ (: dog.body :getY) -3)))
+  (when (love.keyboard.isDown "a") (: dog.body :setX (+ (: dog.body :getX) -3)))
+  (when (love.keyboard.isDown "s") (: dog.body :setY (+ (: dog.body :getY) 3)))
+  (when (love.keyboard.isDown "d") (: dog.body :setX (+ (: dog.body :getX) 3)))
+  (when (love.keyboard.isDown "q") (set-angle dog.body -0.1 -1 1))
+  (when (love.keyboard.isDown "e") (set-angle dog.body 0.1 -1 1)))
 
 (defn love.draw []
   (love.graphics.setCanvas canvas)
   (love.graphics.clear)
 
+  (if (= dog.state "closed") (: dog.anim :gotoFrame 1)
+      (= dog.state "open") (: dog.anim :gotoFrame 3))
 
-  (: dog-anim :draw sheets.dog
-     (: dog-body :getX)
-     (: dog-body :getY)
-     (: dog-body :getAngle)
+  (: dog.anim :draw sheets.dog
+     (: dog.body :getX)
+     (: dog.body :getY)
+     (: dog.body :getAngle)
      1
      1
-     8
-     8)
+     15
+     30)
 
   (love.graphics.setColor 0.5 0.8 0.3)
   (love.graphics.polygon "fill" (: ground-body :getWorldPoints (: ground-shape :getPoints)))

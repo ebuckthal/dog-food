@@ -4,10 +4,12 @@
 
 (local sheets {
  "doughnut" (love.graphics.newImage "assets/doughnut.png")
+ "dog" (love.graphics.newImage "assets/dog-e-dog.png")
 })
 
 (local grids {
  "doughnut" (anim8.newGrid 16 16 64 16)
+ "dog" (anim8.newGrid 48 48 (: sheets.dog :getWidth) (: sheets.dog :getHeight))
 })
 
 (var anim {})
@@ -24,9 +26,21 @@
 (var dog-body nil)
 (var dog-shape nil)
 (var dog-fixture nil)
+(var dog-anim (anim8.newAnimation (: grids.dog :getFrames "1-5" 1) 0.2))
 
-(defn set-angle [body angleDelta]
-  (: body :setAngle (+ (: body :getAngle) angleDelta)))
+(defn bounded [val ?min ?max]
+  (if (> val ?max) ?max
+      (< val ?min) ?min
+      val))
+
+(defn set-angle [body angleDelta ?minAngle ?maxAngle]
+  (let [oldAngle (: body :getAngle)
+        newAngle (bounded (+ oldAngle angleDelta)
+                          ?minAngle
+                          ?maxAngle)]
+    (when (~= oldAngle newAngle)
+      (: body :setAngle newAngle))
+    ))
 
 (defn new-ball []
  (let [
@@ -70,9 +84,9 @@
   (set canvas (love.graphics.newCanvas 800 800))
   (: canvas :setFilter "nearest" "nearest")
 
-  (global sheet (love.graphics.newImage "sheet2.png"))
-  (global g (anim8.newGrid 37 39 740 39))
-  (global animation (anim8.newAnimation (: g :getFrames "1-20" 1) 0.1))
+  ; (global sheet (love.graphics.newImage "sheet2.png"))
+  ; (global g (anim8.newGrid 37 39 740 39))
+  ; (global animation (anim8.newAnimation (: g :getFrames "1-20" 1) 0.1))
 
   (let [code (love.filesystem.read "stdio.fnl")
         data (love.filesystem.newFileData (fennel.compileString code) "io")
@@ -88,7 +102,9 @@
 
 (defn love.update [dt]
   (: world :update dt)
-  (: animation :update dt)
+
+  ;(: animation :update dt)
+  (: dog-anim :update dt)
 
   (each [key value (pairs balls)]
     (: value.anim :update dt)
@@ -102,26 +118,29 @@
   (when (love.keyboard.isDown "a") (: dog-body :setX (+ (: dog-body :getX) -3)))
   (when (love.keyboard.isDown "s") (: dog-body :setY (+ (: dog-body :getY) 3)))
   (when (love.keyboard.isDown "d") (: dog-body :setX (+ (: dog-body :getX) 3)))
-  (when (love.keyboard.isDown "q") (set-angle dog-body -0.1))
-  (when (love.keyboard.isDown "e") (set-angle dog-body 0.1)))
+  (when (love.keyboard.isDown "q") (set-angle dog-body -0.1 -1 1))
+  (when (love.keyboard.isDown "e") (set-angle dog-body 0.1 -1 1)))
 
 (defn love.draw []
   (love.graphics.setCanvas canvas)
   (love.graphics.clear)
 
+
+  (: dog-anim :draw sheets.dog
+     (: dog-body :getX)
+     (: dog-body :getY)
+     (: dog-body :getAngle)
+     1
+     1
+     8
+     8)
+
   (love.graphics.setColor 0.5 0.8 0.3)
-
-  (love.graphics.polygon
-   "fill"
-   (: dog-body :getWorldPoints (: dog-shape :getPoints)))
-
   (love.graphics.polygon "fill" (: ground-body :getWorldPoints (: ground-shape :getPoints)))
-
-
   (love.graphics.setColor 1 1 1)
 
   (each [key value (pairs balls)]
-    (: value.anim :draw value.sheet 
+    (: value.anim :draw value.sheet
       (: value.body :getX)
       (: value.body :getY)
       (: value.body :getAngle)

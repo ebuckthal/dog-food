@@ -1,11 +1,14 @@
 SHELL := /bin/bash
 URN := ~/.urn/bin/urn.lua
 
-main: main.lisp 
+main.lua: main.lisp 
 	$(URN) main.lisp -o main
 
 run: main.lua
 	love .
+
+clean:
+	rm main.lua
 
 watch:
 	@echo "watching for changes to main.lisp ..."

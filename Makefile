@@ -8,7 +8,7 @@ run: main.lua
 	love .
 
 clean:
-	rm main.lua
+	rm -f main.lua
 
 watch:
 	@echo "watching for changes to main.lisp ..."

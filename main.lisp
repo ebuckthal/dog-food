@@ -6,6 +6,7 @@
 (import love/keyboard)
 (import love/audio)
 
+(define love :hidden (require "love"))
 (define anim8 :hidden (require "anim8"))
 (define new-animation (.> anim8 :newAnimation))
 (define new-grid (.> anim8 :newGrid))
@@ -27,13 +28,36 @@
    (self fixture :setUserData :ground)
    { :body body :shape shape :fixture fixture }))
 
+(defun set-dog-state (dog new-state)
+  (.<! dog :state new-state)
+  (.<! dog :anim (.> (.> dog :anims) new-state))
+  (self (.> dog :anim) :resume))
+
+(defun dog-advance-state (dog)
+  (let [(next-state (case (.> dog :state)
+                      [:closed :opening]
+                      [:opening :open]
+                      [:open :closing]
+                      [:closing :closed]))]
+  (set-dog-state dog next-state)))
+
 (defun new-dog ()
   (let* [ (body (love/physics/new-body world 48 48 "kinematic"))
         (shape (love/physics/new-rectangle-shape 48 48))
         (fixture (love/physics/new-fixture body shape))
-        (anim (new-animation (.> frames :dog) 0.1))]
+        (dog { :body body :shape shape :fixture fixture })
+        (anims { :closed (new-animation (.> frames :dog-closed) 0.1 "pauseAtEnd")
+               :opening (new-animation (.> frames :dog-opening)
+                                       0.1
+                                       (lambda () (dog-advance-state dog)))
+               :open (new-animation (.> frames :dog-open) 0.1 "pauseAtEnd")
+               :closing (new-animation (.> frames :dog-closing)
+                                       0.1
+                                       (lambda () (dog-advance-state dog)))})]
+   (.<! dog :anims anims )
    (self fixture :setUserData :dog)
-   { :body body :shape shape :fixture fixture :anim anim }))
+   (set-dog-state dog :closed)
+   dog))
 
 (defun draw-dog (dog)
   (self (.> dog :anim) :draw
@@ -85,7 +109,10 @@
 
 (define frames {
   :doughnut (self (.> grids :doughnut) :getFrames "1-4" 1)
-  :dog (self (.> grids :dog) :getFrames "1-5" 1)
+  :dog-closed (self (.> grids :dog) :getFrames 1 1)
+  :dog-opening (self (.> grids :dog) :getFrames "2-3" 1)
+  :dog-open (self (.> grids :dog) :getFrames 3 1)
+  :dog-closing (self (.> grids :dog) :getFrames "4-5" 1)
   })
 
 
@@ -130,6 +157,12 @@
 
   ; callbacks?
   (self world :setCallbacks begin-contact nil nil nil)
+
+  ; one-shot keys
+  (.<! love :keypressed
+       (lambda (key isRepeat)
+         (when (= key "return")
+           (dog-advance-state dog))))
 )
 
 (defevent :update (dt)

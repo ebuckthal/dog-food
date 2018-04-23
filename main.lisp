@@ -5,7 +5,9 @@
 (import love/window)
 (import love/keyboard)
 (import love/audio)
-(import lua/math)
+
+; import from helpers.lisp
+(import helpers (bounded sample))
 
 (define love :hidden (require "love"))
 (define anim8 :hidden (require "anim8"))
@@ -13,21 +15,6 @@
 (define new-grid (.> anim8 :newGrid))
 
 (define scale 2)
-
-; helpers
-(defun bounded (val min max)
-  (cond [(> val max) max]
-        [(< val min) min]
-        [true val]))
-
-(defun sample (xs)
-  (let [(index (+ 
-                 1 
-                 (lua/math/floor 
-                   (* (n xs) 
-                      (lua/math/random)))))]
-    (nth xs index)))
-
 
 ; game objects
 
@@ -169,7 +156,7 @@
   (set! dog (new-dog))
 
   (set! canvas (love/graphics/new-canvas 800 800))
-  (self canvas :setFilter "nearest" "nearest")
+  (self canvas :setFilter "nearest" "nearest" 0)
 
   ; callbacks?
   (self world :setCallbacks begin-contact nil nil nil)

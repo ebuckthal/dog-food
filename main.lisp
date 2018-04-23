@@ -94,6 +94,7 @@
   :taco (love/graphics/new-image "assets/taco.png")
   :hotdog (love/graphics/new-image "assets/hotdog.png")
   :strawberry (love/graphics/new-image "assets/strawberry.png")
+  :broccoli (love/graphics/new-image "assets/broccoli.png")
 })
 
 (define dog-sheet (love/graphics/new-image "assets/dog-e-dog.png"))

@@ -5,6 +5,7 @@
 (import love/window)
 (import love/keyboard)
 (import love/audio)
+(import lua/math)
 
 (define love :hidden (require "love"))
 (define anim8 :hidden (require "anim8"))
@@ -12,6 +13,21 @@
 (define new-grid (.> anim8 :newGrid))
 
 (define scale 2)
+
+; helpers
+(defun bounded (val min max)
+  (cond [(> val max) max]
+        [(< val min) min]
+        [true val]))
+
+(defun sample (xs)
+  (let [(index (+ 
+                 1 
+                 (lua/math/floor 
+                   (* (n xs) 
+                      (lua/math/random)))))]
+    (nth xs index)))
+
 
 ; game objects
 
@@ -61,7 +77,7 @@
 
 (defun draw-dog (dog)
   (self (.> dog :anim) :draw
-        (.> sheets :dog)
+        dog-sheet
         (self (.> dog :body) :getX)
         (self (.> dog :body) :getY)
         (self (.> dog :body) :getAngle)
@@ -70,25 +86,30 @@
         15
         30))
 
-(defun new-doughnut ()
+(defun new-food ()
   (let* [
     (body (love/physics/new-body world 300 300 "dynamic"))
     (shape (love/physics/new-circle-shape 8))
     (fixture (love/physics/new-fixture body shape))
     (anim (new-animation (.> frames :doughnut) 0.1))
-    ]
+    (sheet-key (sample (keys food-sheets)))]
+
     (self body :applyLinearImpulse -8 -10)
     (self fixture :setUserData :food)
     (self body :setAngularVelocity 0.1)
-    { :body body :shape shape :fixture fixture :anim anim })
+    { :body body :shape shape :fixture fixture :anim anim :sheet-key sheet-key })
   )
 
 
 ; anim8 assets: sheets, grids n frames
-(define sheets {
-  :doughnut (love/graphics/new-image "assets/taco.png")
-  :dog (love/graphics/new-image "assets/dog-e-dog.png")
-  })
+(define food-sheets {
+  :doughnut (love/graphics/new-image "assets/doughnut.png")
+  :taco (love/graphics/new-image "assets/taco.png")
+  :hotdog (love/graphics/new-image "assets/hotdog.png")
+  :strawberry (love/graphics/new-image "assets/strawberry.png")
+})
+
+(define dog-sheet (love/graphics/new-image "assets/dog-e-dog.png"))
 
 (define sounds {
   :throw (love/audio/new-source "assets/throw.wav" "static")
@@ -98,13 +119,13 @@
   :doughnut (new-grid
              16
              16
-             (self (.> sheets :doughnut) :getWidth)
-             (self (.> sheets :doughnut) :getHeight))
+             (self (.> food-sheets :doughnut) :getWidth)
+             (self (.> food-sheets :doughnut) :getHeight))
   :dog (new-grid
         48
         48
-        (self (.> sheets :dog) :getWidth)
-        (self (.> sheets :dog) :getHeight))
+        (self dog-sheet :getWidth)
+        (self dog-sheet :getHeight))
   })
 
 (define frames {
@@ -116,11 +137,6 @@
   })
 
 
-; helpers
-(defun bounded (val min max)
-  (cond [(> val max) max]
-        [(< val min) min]
-        [true val]))
 
 ; sets angle on a love.physics body, between the min and max angles (in radians)
 (defun set-angle (body angle-delta min-angle max-angle)
@@ -181,8 +197,8 @@
 
   ; keys
   (when (love/keyboard/is-down "space")
-    (set! foods (cons (new-doughnut) foods))
-    (self (.> sounds :throw) :play))
+    (self (.> sounds :throw) :play)
+    (set! foods (cons (new-food) foods)))
   (when (love/keyboard/is-down "w")
     (self (.> dog :body) :setY (- (self (.> dog :body) :getY) 3)))
   (when (love/keyboard/is-down "a")
@@ -205,7 +221,7 @@
   (do [(food foods)]
     (let* [(body (.> food :body))
            (anim (.> food :anim))
-           (sheet (.> sheets :doughnut))
+           (sheet (.> food-sheets (.> food :sheet-key)))
            (x (self body :getX))
            (y (self body :getY))]
       (self anim :draw sheet x y 0 1 1 8 8)))

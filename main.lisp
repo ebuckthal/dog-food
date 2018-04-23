@@ -156,7 +156,7 @@
   (set! dog (new-dog))
 
   (set! canvas (love/graphics/new-canvas 800 800))
-  (self canvas :setFilter "nearest" "nearest" 0)
+  (self canvas :setFilter "nearest" "nearest")
 
   ; callbacks?
   (self world :setCallbacks begin-contact nil nil nil)

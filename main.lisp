@@ -4,6 +4,7 @@
 (import love/image)
 (import love/window)
 (import love/keyboard)
+(import love/audio)
 
 (define anim8 :hidden (require "anim8"))
 (define new-animation (.> anim8 :newAnimation))
@@ -63,6 +64,10 @@
 (define sheets {
   :doughnut (love/graphics/new-image "assets/taco.png")
   :dog (love/graphics/new-image "assets/dog-e-dog.png")
+  })
+
+(define sounds {
+  :throw (love/audio/new-source "assets/throw.wav" "static")
   })
 
 (define grids {
@@ -143,7 +148,8 @@
 
   ; keys
   (when (love/keyboard/is-down "space")
-    (set! foods (cons (new-doughnut) foods)))
+    (set! foods (cons (new-doughnut) foods))
+    (self (.> sounds :throw) :play))
   (when (love/keyboard/is-down "w")
     (self (.> dog :body) :setY (- (self (.> dog :body) :getY) 3)))
   (when (love/keyboard/is-down "a")

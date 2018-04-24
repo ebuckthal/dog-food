@@ -25,7 +25,7 @@
 (define foods :mutable '())
 
 (defun new-ground ()
-  (let* [(body (love/physics/new-body world (/ 800 2) (/ 750 2) "static"))
+  (let* [(body (love/physics/new-body world (/ 800 2) 775 "static"))
          (shape (love/physics/new-rectangle-shape 800 50))
          (fixture (love/physics/new-fixture body shape))]
    (self fixture :setUserData :ground)
@@ -75,29 +75,35 @@
 
 (defun new-food ()
   (let* [
-    (body (love/physics/new-body world 300 300 "dynamic"))
-    (shape (love/physics/new-circle-shape 8))
+    (body (love/physics/new-body world 600 600 "dynamic"))
+    (shape (love/physics/new-circle-shape 32))
     (fixture (love/physics/new-fixture body shape))
     (anim (new-animation (.> frames :doughnut) 0.1))
     (sheet-key (sample (keys food-sheets)))]
 
-    (self body :applyLinearImpulse -8 -10)
+    (self fixture :setDensity 0.5)
+    (self body :applyLinearImpulse -30 -50)
     (self fixture :setUserData :food)
     (self body :setAngularVelocity 0.1)
     { :body body :shape shape :fixture fixture :anim anim :sheet-key sheet-key })
   )
 
+; imports 4x sheet 
+(defun import-sheet (path)
+  (let [(image (love/graphics/new-image path))]
+    ; (self image :setFilter "nearest" "nearest")
+    image))
 
 ; anim8 assets: sheets, grids n frames
 (define food-sheets {
-  :doughnut (love/graphics/new-image "assets/doughnut.png")
-  :taco (love/graphics/new-image "assets/taco.png")
-  :hotdog (love/graphics/new-image "assets/hotdog.png")
-  :strawberry (love/graphics/new-image "assets/strawberry.png")
-  :broccoli (love/graphics/new-image "assets/broccoli.png")
+  :doughnut (import-sheet "assets/doughnut4x.png")
+  :taco (import-sheet "assets/taco4x.png")
+  :hotdog (import-sheet "assets/hotdog4x.png")
+  :strawberry (import-sheet "assets/strawberry4x.png")
+  :broccoli (import-sheet "assets/broccoli4x.png")
 })
 
-(define dog-sheet (love/graphics/new-image "assets/dog-e-dog.png"))
+(define dog-sheet (import-sheet "assets/dog-e-dog4x.png"))
 
 (define sounds {
   :throw (love/audio/new-source "assets/throw.wav" "static")
@@ -105,13 +111,13 @@
 
 (define grids {
   :doughnut (new-grid
-             16
-             16
+             64 
+             64 
              (self (.> food-sheets :doughnut) :getWidth)
              (self (.> food-sheets :doughnut) :getHeight))
   :dog (new-grid
-        48
-        48
+        192 
+        192 
         (self dog-sheet :getWidth)
         (self dog-sheet :getHeight))
   })
@@ -123,6 +129,7 @@
   :dog-open (self (.> grids :dog) :getFrames 3 1)
   :dog-closing (self (.> grids :dog) :getFrames "4-5" 1)
   })
+
 
 
 
@@ -150,14 +157,11 @@
 
 (defevent :load ()
   (love/window/set-mode 800 800 { :display 2 })
-  (love/physics/set-meter 64)
+  (love/physics/set-meter 192)
 
-  (set! world (love/physics/new-world 0 (* 9.81 64) true))
+  (set! world (love/physics/new-world 0 (* 9.81 192) true))
   (set! ground (new-ground))
   (set! dog (new-dog))
-
-  (set! canvas (love/graphics/new-canvas 800 800))
-  (self canvas :setFilter "nearest" "nearest")
 
   ; callbacks?
   (self world :setCallbacks begin-contact nil nil nil)
@@ -165,8 +169,14 @@
   ; one-shot keys
   (.<! love :keypressed
        (lambda (key isRepeat)
-         (when (= key "return")
-           (dog-advance-state dog))))
+         (cond
+           [(= key "return")
+            (dog-advance-state dog)]
+           [(= key "space")
+            (self (.> sounds :throw) :play)
+            (set! foods (cons (new-food) foods))]
+           [true]
+           )))
 )
 
 (defevent :update (dt)
@@ -184,9 +194,6 @@
                 foods))
 
   ; keys
-  (when (love/keyboard/is-down "space")
-    (self (.> sounds :throw) :play)
-    (set! foods (cons (new-food) foods)))
   (when (love/keyboard/is-down "w")
     (self (.> dog :body) :setY (- (self (.> dog :body) :getY) 3)))
   (when (love/keyboard/is-down "a")
@@ -201,8 +208,6 @@
     (set-angle (.> dog :body) 0.1 -1 1)))
 
 (defevent :draw ()
-  (love/graphics/set-canvas canvas)
-  (love/graphics/clear)
   (draw-dog dog)
 
   ; just draw all foods
@@ -212,14 +217,14 @@
            (sheet (.> food-sheets (.> food :sheet-key)))
            (x (self body :getX))
            (y (self body :getY))]
-      (self anim :draw sheet x y 0 1 1 8 8)))
+      (self anim :draw sheet x y 0 1 1 32 32)))
 
   (love/graphics/set-color 0.5 0.8 0.3)
-  (love/graphics/polygon "fill" (self (.> ground :body)
-                                      :getWorldPoints
-                                      (self (.> ground :shape)
-                                            :getPoints)))
-  (love/graphics/set-color 1 1 1)
+  (love/graphics/polygon 
+    "fill" 
+    (self (.> ground :body) 
+          :getWorldPoints 
+          (self (.> ground :shape) :getPoints)))
 
-  (love/graphics/set-canvas)
-  (love/graphics/draw canvas 0 0 0 scale scale))
+  ; must set color back to white at end of draw
+  (love/graphics/set-color 1 1 1))

@@ -88,7 +88,7 @@
     { :body body :shape shape :fixture fixture :anim anim :sheet-key sheet-key })
   )
 
-; imports 4x sheet 
+; imports 4x sheet
 (defun import-sheet (path)
   (let [(image (love/graphics/new-image path))]
     ; (self image :setFilter "nearest" "nearest")
@@ -111,13 +111,13 @@
 
 (define grids {
   :doughnut (new-grid
-             64 
-             64 
+             64
+             64
              (self (.> food-sheets :doughnut) :getWidth)
              (self (.> food-sheets :doughnut) :getHeight))
   :dog (new-grid
-        192 
-        192 
+        192
+        192
         (self dog-sheet :getWidth)
         (self dog-sheet :getHeight))
   })
@@ -221,10 +221,10 @@
       (self anim :draw sheet x y 0 1 1 32 32)))
 
   (love/graphics/set-color 0.5 0.8 0.3)
-  (love/graphics/polygon 
-    "fill" 
-    (self (.> ground :body) 
-          :getWorldPoints 
+  (love/graphics/polygon
+    "fill"
+    (self (.> ground :body)
+          :getWorldPoints
           (self (.> ground :shape) :getPoints)))
 
   ; must set color back to white at end of draw

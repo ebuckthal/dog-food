@@ -28,7 +28,7 @@
   (let* [(body (love/physics/new-body world (/ 800 2) 775 "static"))
          (shape (love/physics/new-rectangle-shape 800 50))
          (fixture (love/physics/new-fixture body shape))]
-   (self fixture :setUserData :ground)
+   (self fixture :setUserData {:type :ground})
    { :body body :shape shape :fixture fixture }))
 
 (defun set-dog-state (dog new-state)
@@ -83,7 +83,7 @@
 
     (self fixture :setDensity 0.5)
     (self body :applyLinearImpulse -30 -50)
-    (self fixture :setUserData :food)
+    (self fixture :setUserData {:type :food :food-type sheet-key})
     (self body :setAngularVelocity 0.1)
     { :body body :shape shape :fixture fixture :anim anim :sheet-key sheet-key })
   )
@@ -149,11 +149,12 @@
 ; callback for collision detection
 (defun begin-contact (a b coll)
   (let [(a-body (self a :getBody))
-        (a-data (self a :getUserData))
+        (a-type (.> (self a :getUserData) :type))
         (b-body (self b :getBody))
-        (b-data (self b :getUserData))]
-        (when (collision-with? :food :ground a-data b-data)
-          (self b-body :setUserData true))))
+        (b-type (.> (self b :getUserData) :type))]
+    (when (collision-with? :food :ground a-type b-type)
+      ;; set to destroy
+      (self b-body :setUserData true))))
 
 (defevent :load ()
   (love/window/set-mode 800 800 { :display 2 })

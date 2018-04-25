@@ -150,19 +150,23 @@
    (when (/= old-angle new-angle)
      (self body :setAngle new-angle))))
 
-(defun collision-with? (sym-a sym-b test-a test-b)
-  (or (and (= sym-a test-a) (= sym-b test-b))
-      (and (= sym-a test-b) (= sym-b test-a))))
+(defun collision-with (type-a type-b fixture-a fixture-b fn)
+  (let [(test-a (.> (self fixture-a :getUserData) :type))
+        (test-b (.> (self fixture-b :getUserData) :type))]
+    (cond [(and (= type-a test-a) (= type-b test-b))
+           (fn fixture-a fixture-b)]
+          [(and (= type-a test-b) (= type-b test-a))
+           (fn fixture-b fixture-a)]
+          [true nil])))
+
+(defun fixture-tell-body-to-die (fixture)
+  (self (self fixture :getBody) :setUserData true))
 
 ; callback for collision detection
 (defun begin-contact (a b coll)
-  (let [(a-body (self a :getBody))
-        (a-type (.> (self a :getUserData) :type))
-        (b-body (self b :getBody))
-        (b-type (.> (self b :getUserData) :type))]
-    (when (collision-with? :food :ground a-type b-type)
-      ;; set to destroy
-      (self b-body :setUserData true))))
+  (collision-with
+   :food :ground a b
+   (lambda (food-fixture _) (fixture-tell-body-to-die food-fixture))))
 
 (defevent :load ()
   (love/window/set-mode 800 800 { :display 2 })

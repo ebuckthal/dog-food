@@ -110,7 +110,8 @@
   })
 
 (define grids {
-  :doughnut (new-grid
+  ;; assuming all food is 16x16 at 4x with 4 frames
+  :food (new-grid
              64
              64
              (self (.> food-sheets :doughnut) :getWidth)
@@ -123,7 +124,7 @@
   })
 
 (define frames {
-  :doughnut (self (.> grids :doughnut) :getFrames "1-4" 1)
+  :doughnut (self (.> grids :food) :getFrames "1-4" 1)
   :dog-closed (self (.> grids :dog) :getFrames 1 1)
   :dog-opening (self (.> grids :dog) :getFrames "2-3" 1)
   :dog-open (self (.> grids :dog) :getFrames 3 1)
@@ -131,11 +132,11 @@
   })
 
 (define food-stills
-  {:doughnut (new-animation (self (.> grids :doughnut) :getFrames 1 1) 0.1 "pauseAtEnd")
-   :taco (new-animation (self (.> grids :taco) :getFrames 1 1) 0.1 "pauseAtEnd")
-   :hotdog (new-animation (self (.> grids :hotdog) :getFrames 1 1) 0.1 "pauseAtEnd")
-   :strawberry (new-animation (self (.> grids :strawberry) :getFrames 1 1) 0.1 "pauseAtEnd")
-   :broccoli (new-animation (self (.> grids :broccoli) :getFrames 1 1) 0.1 "pauseAtEnd")
+  {:doughnut (new-animation (self (.> grids :food) :getFrames 1 1) 0.1 "pauseAtEnd")
+   :taco (new-animation (self (.> grids :food) :getFrames 1 1) 0.1 "pauseAtEnd")
+   :hotdog (new-animation (self (.> grids :food) :getFrames 1 1) 0.1 "pauseAtEnd")
+   :strawberry (new-animation (self (.> grids :food) :getFrames 1 1) 0.1 "pauseAtEnd")
+   :broccoli (new-animation (self (.> grids :food) :getFrames 1 1) 0.1 "pauseAtEnd")
    })
 
 

@@ -130,6 +130,13 @@
   :dog-closing (self (.> grids :dog) :getFrames "4-5" 1)
   })
 
+(define food-stills
+  {:doughnut (new-animation (self (.> grids :doughnut) :getFrames 1 1) 0.1 "pauseAtEnd")
+   :taco (new-animation (self (.> grids :taco) :getFrames 1 1) 0.1 "pauseAtEnd")
+   :hotdog (new-animation (self (.> grids :hotdog) :getFrames 1 1) 0.1 "pauseAtEnd")
+   :strawberry (new-animation (self (.> grids :strawberry) :getFrames 1 1) 0.1 "pauseAtEnd")
+   :broccoli (new-animation (self (.> grids :broccoli) :getFrames 1 1) 0.1 "pauseAtEnd")
+   })
 
 
 

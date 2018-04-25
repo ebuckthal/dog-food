@@ -37,32 +37,69 @@
   (self (.> dog :anim) :resume))
 
 (defun dog-advance-state (dog)
-  (let [(next-state (case (.> dog :state)
-                      [:closed :opening]
-                      [:opening :open]
-                      [:open :closing]
-                      [:closing :closed]))]
-  (set-dog-state dog next-state)))
+  (let* [(cur-state (.> dog :state))
+         (next-state (case cur-state
+                       [:closed :opening]
+                       [:opening :open]
+                       [:open :closing]
+                       [:closing :closed]))]
+    (when (and (= cur-state :open) (dog-has-food? dog))
+      (dog-eat-food dog))
+    (set-dog-state dog next-state)))
+
+(defun dog-maybe-catch-food (dog food-fixture)
+  (when (and (= :open (.> dog :state)) (not (dog-has-food? dog)))
+    (dog-catch-food dog food-fixture)))
+
+(defun dog-has-food? (dog) (not (= nil (.> dog :has-food-type))))
+
+(defun dog-catch-food (dog food-fixture)
+  (print! "dog caught food")
+  (.<! dog :has-food-type (.> (self food-fixture :getUserData) :food-type)))
+
+(defun dog-eat-food (dog)
+  ;; inc points here
+  (.<! dog :has-food-type nil))
 
 (defun new-dog ()
-  (let* [ (body (love/physics/new-body world 48 48 "kinematic"))
-        (shape (love/physics/new-rectangle-shape 48 48))
-        (fixture (love/physics/new-fixture body shape))
-        (dog { :body body :shape shape :fixture fixture })
-        (anims { :closed (new-animation (.> frames :dog-closed) 0.1 "pauseAtEnd")
-               :opening (new-animation (.> frames :dog-opening)
-                                       0.1
-                                       (lambda () (dog-advance-state dog)))
-               :open (new-animation (.> frames :dog-open) 0.1 "pauseAtEnd")
-               :closing (new-animation (.> frames :dog-closing)
-                                       0.1
-                                       (lambda () (dog-advance-state dog)))})]
-   (.<! dog :anims anims )
-   (self fixture :setUserData :dog)
-   (set-dog-state dog :closed)
-   dog))
+  (let* [(body (love/physics/new-body world 48 48 "kinematic"))
+         ;; TODO: figure out sizes and how to offset shapes on bodies
+         (face-shape (love/physics/new-rectangle-shape 48 48))
+         (face-fixture (love/physics/new-fixture body face-shape))
+         (mouth-shape (love/physics/new-rectangle-shape 48 50))
+         (mouth-fixture (love/physics/new-fixture body mouth-shape))
+         (dog {:body body
+               :shape face-shape
+               :fixture face-fixture
+               :mouth-shape mouth-shape
+               :mouth-fixture mouth-fixture
+               :state nil
+               :anim nil
+               :anims nil
+               :has-food-type nil})
+         (anims {:closed (new-animation (.> frames :dog-closed) 0.1 "pauseAtEnd")
+                 :opening (new-animation (.> frames :dog-opening)
+                                         0.1
+                                         (lambda () (dog-advance-state dog)))
+                 :open (new-animation (.> frames :dog-open) 0.1 "pauseAtEnd")
+                 :closing (new-animation (.> frames :dog-closing)
+                                         0.1
+                                         (lambda () (dog-advance-state dog)))})]
+    (.<! dog :anims anims)
+    (self face-fixture :setUserData {:type :dog})
+    (self mouth-fixture :setUserData {:type :dog-mouth})
+    (set-dog-state dog :closed)
+    dog))
 
 (defun draw-dog (dog)
+  (when (dog-has-food? dog)
+    (let [(food (.> dog :has-food-type))]
+      (self (.> food-stills food) :draw
+            (.> food-sheets food)
+            (+ 110 (self (.> dog :body) :getX))
+            (+ 70 (self (.> dog :body) :getY))
+            (self (.> dog :body) :getAngle)
+            0.5 0.5 15 30)))
   (self (.> dog :anim) :draw
         dog-sheet
         (self (.> dog :body) :getX)
@@ -139,8 +176,6 @@
    :broccoli (new-animation (self (.> grids :food) :getFrames 1 1) 0.1 "pauseAtEnd")
    })
 
-
-
 ; sets angle on a love.physics body, between the min and max angles (in radians)
 (defun set-angle (body angle-delta min-angle max-angle)
   (let* [(old-angle (self body :getAngle))
@@ -164,6 +199,9 @@
 
 ; callback for collision detection
 (defun begin-contact (a b coll)
+  (collision-with
+   :food :dog-mouth a b
+   (lambda (food-fixture _) (dog-maybe-catch-food dog food-fixture)))
   (collision-with
    :food :ground a b
    (lambda (food-fixture _) (fixture-tell-body-to-die food-fixture))))

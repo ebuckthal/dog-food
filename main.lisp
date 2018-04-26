@@ -62,11 +62,18 @@
   (.<! dog :has-food-type nil))
 
 (defun new-dog ()
-  (let* [(body (love/physics/new-body world 48 48 "kinematic"))
+  (let* [(body (love/physics/new-body world 192 192 "kinematic"))
          ;; TODO: figure out sizes and how to offset shapes on bodies
-         (face-shape (love/physics/new-rectangle-shape 48 48))
+         (face-shape (love/physics/new-polygon-shape
+                      32 40
+                      100 40
+                      180 48
+                      ;180 66
+                      118 102
+                      170 126
+                      32 132))
          (face-fixture (love/physics/new-fixture body face-shape))
-         (mouth-shape (love/physics/new-rectangle-shape 48 50))
+         (mouth-shape (love/physics/new-rectangle-shape 118 102 20 50))
          (mouth-fixture (love/physics/new-fixture body mouth-shape))
          (dog {:body body
                :shape face-shape
@@ -96,10 +103,10 @@
     (let [(food (.> dog :has-food-type))]
       (self (.> food-stills food) :draw
             (.> food-sheets food)
-            (+ 110 (self (.> dog :body) :getX))
-            (+ 70 (self (.> dog :body) :getY))
+            (+ 120 (self (.> dog :body) :getX))
+            (+ 65 (self (.> dog :body) :getY))
             (self (.> dog :body) :getAngle)
-            0.5 0.5 15 30)))
+            0.5 0.5 0 0)))
   (self (.> dog :anim) :draw
         dog-sheet
         (self (.> dog :body) :getX)
@@ -124,6 +131,56 @@
     (self body :setAngularVelocity 0.1)
     { :body body :shape shape :fixture fixture :anim anim :sheet-key sheet-key })
   )
+
+(defmacro pself (obj key &args)
+  `(cdr (list (pcall (.> ,obj ,key) ,obj ,@args))))
+
+(defun draw-shapes (body)
+  (do [(shape (map (lambda (fixture) (self fixture :getShape))
+                   (values (self body :getFixtures))))]
+      (love/graphics/set-color 1 0 0 0.2)
+      (case (self shape :getType)
+        ["polygon" (love/graphics/polygon
+                    "fill"
+                    (self body :getWorldPoints (self shape :getPoints)))]
+        ["circle" (love/graphics/circle
+                   "fill"
+                   (self body :getWorldPoint (self shape :getPoint))
+                   (self shape :getRadius))]
+        [true (print! "no match, hmm...")])
+      (love/graphics/set-color 1 1 1)))
+
+;; this function must return a function that can be called
+;; pcall(shape:getPoint)
+;; pcall(shape.getPoint, shape)
+(defun partial (fn &args)
+  (lambda (&moreargs) (apply fn (append args moreargs))))
+
+(defun my-get-point (shape)
+  (partial (.> shape :getPoint) shape))
+
+(defun draw-shapes-tests (body)
+  (let* [(world (if body nil (love/physics/new-world 0 (* 9.81 192) true)))
+         (body (if body body (love/physics/new-body world 100 100 "static")))
+         (rect-shape (love/physics/new-rectangle-shape 100 100 500 500))
+         (rect-fixture (love/physics/new-fixture body rect-shape))
+         (poly-shape (love/physics/new-polygon-shape 0 0 100 100 0 100))
+         (poly-fixture (love/physics/new-fixture body poly-shape))
+         (circle-shape (love/physics/new-circle-shape 10 1 500))
+         (circle-fixture (love/physics/new-fixture body circle-shape))]
+    ;(debug (cdr (list (pcall (.> circle-shape :getPoint) circle-shape))))
+;;                        (self circle-shape :getPoint))))
+    ;;(affirm (= true (fixture-is-shape? rect-fixture "polygon")))
+    ;;(affirm (= false (fixture-is-shape? rect-fixture "circle")))
+    ;;(affirm (= true (fixture-is-shape? circle-fixture "circle")))
+    ;;(affirm (= false (fixture-is-shape? circle-fixture "polygon")))
+    (draw-shapes body)
+    (if world
+      (self world :destroy)
+      (progn
+       (self rect-fixture :destroy)
+       (self circle-fixture :destroy)
+       (self poly-fixture :destroy)))))
 
 ; imports 4x sheet
 (defun import-sheet (path)
@@ -263,6 +320,7 @@
 
 (defevent :draw ()
   (draw-dog dog)
+  (draw-shapes (.> dog :body))
 
   ; just draw all foods
   (do [(food foods)]

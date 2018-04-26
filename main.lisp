@@ -186,13 +186,16 @@
      (self body :setAngle new-angle))))
 
 (defun collision-with (type-a type-b fixture-a fixture-b fn)
-  (let [(test-a (.> (self fixture-a :getUserData) :type))
-        (test-b (.> (self fixture-b :getUserData) :type))]
-    (cond [(and (= type-a test-a) (= type-b test-b))
-           (fn fixture-a fixture-b)]
-          [(and (= type-a test-b) (= type-b test-a))
-           (fn fixture-b fixture-a)]
-          [true nil])))
+  (let [(data-a (.> (self fixture-a :getUserData)))
+        (data-b (.> (self fixture-b :getUserData)))]
+    (when (and (not (nil? data-a)) (not (nil? data-b)))
+      (let [(test-a (.> (self fixture-a :getUserData) :type))
+            (test-b (.> (self fixture-b :getUserData) :type))]
+        (cond [(and (= type-a test-a) (= type-b test-b))
+               (fn fixture-a fixture-b)]
+              [(and (= type-a test-b) (= type-b test-a))
+               (fn fixture-b fixture-a)]
+              [true nil])))))
 
 (defun fixture-tell-body-to-die (fixture)
   (self (self fixture :getBody) :setUserData true))

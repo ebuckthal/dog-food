@@ -66,28 +66,24 @@
   ;; inc points here
   (.<! dog :has-food-type nil))
 
+(defun new-shape (body fixture-data shape)
+  (let [(fixture (love/physics/new-fixture body shape))]
+    (self fixture :setUserData fixture-data)
+    shape))
+
+;; turns a list of point lists into a list of shifted points (not a list of shifted list points mind you)
+(defun shift-vertices (x y point-alist)
+  (flat-map (lambda (lst) (list (+ x (car lst)) (+ y (cadr lst))))
+            point-alist))
+
 (defun new-dog ()
   (let* [(body (love/physics/new-body world dog-home-x dog-home-y "dynamic"))
-         ;; TODO: figure out sizes and how to offset shapes on bodies
-         (face-shape (love/physics/new-polygon-shape
-                      32 40
-                      100 40
-                      180 48
-                      ;180 66
-                      118 102
-                      170 126
-                      32 132))
-         (face-fixture (love/physics/new-fixture body face-shape))
-         (mouth-shape (love/physics/new-rectangle-shape 118 102 20 50))
-         (mouth-fixture (love/physics/new-fixture body mouth-shape))
          (dog {:body body
-               :shape face-shape
-               :fixture face-fixture
-               :mouth-shape mouth-shape
-               :mouth-fixture mouth-fixture
                :state nil
                :anim nil
                :anims nil
+               :dog-sprite-origin '(-60 -95)
+               :food-sprite-origin '(70 -20)
                :has-food-type nil})
          (anims {:closed (new-animation (.> frames :dog-closed) 0.1 "pauseAtEnd")
                  :opening (new-animation (.> frames :dog-opening)
@@ -98,32 +94,52 @@
                                          0.1
                                          (lambda () (dog-advance-state dog)))})]
     (.<! dog :anims anims)
-    (self face-fixture :setUserData {:type :dog})
-    (self mouth-fixture :setUserData {:type :dog-mouth})
     (self body :setGravityScale 0) ; no gravity on the dog plz
-    (self body :setAngularDamping 2) ; stop spinning one day 
-    (self body :setLinearDamping 2) 
+    (self body :setAngularDamping 2) ; stop spinning one day
+    (self body :setLinearDamping 2)
+    (new-shape
+           body
+           {:type :dog}
+           (apply love/physics/new-polygon-shape
+                  (shift-vertices -40 -60
+                                  '((0 0)
+                                    (68 0)
+                                    (148 8)
+                                    (148 26)
+                                    (86 62)
+                                    (0 62)))))
+    (new-shape body
+               {:type :dog}
+               (apply love/physics/new-polygon-shape
+                      (shift-vertices -40 -60
+                                      '((0 62)
+                                        (86 62)
+                                        (138 86)
+                                        (0 92)))))
+    (new-shape body
+               {:type :dog-mouth}
+               (love/physics/new-rectangle-shape 118 102 50 20 0.1))
     (set-dog-state dog :closed)
     dog))
 
+(defun draw-on-body (body animation sheet local-point)
+  (apply self animation :draw
+         sheet
+         `(,@(pself body :getWorldPoint (nth local-point 1) (nth local-point 2))
+           ,(self body :getAngle)
+           1 1)))
+
 (defun draw-dog (dog)
   (when (dog-has-food? dog)
-    (let [(food (.> dog :has-food-type))]
-      (self (.> food-stills food) :draw
-            (.> food-sheets food)
-            (+ 120 (self (.> dog :body) :getX))
-            (+ 65 (self (.> dog :body) :getY))
-            (self (.> dog :body) :getAngle)
-            0.5 0.5 0 0)))
-  (self (.> dog :anim) :draw
-        dog-sheet
-        (self (.> dog :body) :getX)
-        (self (.> dog :body) :getY)
-        (self (.> dog :body) :getAngle)
-        1
-        1
-        15
-        30))
+    (with (food (.> dog :has-food-type))
+      (draw-on-body (.> dog :body)
+                    (.> food-stills food)
+                    (.> food-sheets food)
+                    (.> dog :food-sprite-origin))))
+  (draw-on-body (.> dog :body)
+                (.> dog :anim)
+                dog-sheet
+                (.> dog :dog-sprite-origin)))
 
 (defun new-food ()
   (let* [
@@ -146,13 +162,15 @@
                    (values (self body :getFixtures))))]
       (love/graphics/set-color 1 0 0 0.2)
       (case (self shape :getType)
-        ["polygon" (love/graphics/polygon
+        ["polygon"
+         (love/graphics/polygon
                     "fill"
                     (self body :getWorldPoints (self shape :getPoints)))]
-        ["circle" (love/graphics/circle
+        ["circle"
+         (apply love/graphics/circle
                    "fill"
-                   (self body :getWorldPoint (self shape :getPoint))
-                   (self shape :getRadius))]
+                   `(,@(pself body :getWorldPoints (self shape :getPoint))
+                     ,(self shape :getRadius)))]
         [true (print! "no match, hmm...")])
       (love/graphics/set-color 1 1 1)))
 

@@ -74,7 +74,8 @@
 
 (defun dog-catch-food (dog food-fixture)
   (print! "dog caught food")
-  (.<! dog :has-food-type (.> (self food-fixture :getUserData) :food-type)))
+  (.<! dog :has-food-type (.> (self food-fixture :getUserData) :food-type))
+  (fixture-tell-body-to-die food-fixture))
 
 (defun dog-eat-food (dog)
   (set! score (+ score 1))
@@ -121,7 +122,7 @@
                                          (lambda () (dog-advance-state dog)))})]
     (.<! dog :anims anims)
     (self body :setGravityScale 0) ; no gravity on the dog plz
-    (self body :setAngularDamping 2) ; stop spinning one day
+    (self body :setAngularDamping 8) ; stop spinning one day
     (self body :setLinearDamping 2)
     (new-fixture
            body

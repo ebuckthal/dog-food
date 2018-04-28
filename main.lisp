@@ -329,13 +329,13 @@
             ; (self (.> sounds :throw) :play)
             (set! foods (cons (new-food) foods))]
            [(= key "a")
-            (body-impulse-vector (.> dog :body) { :x -30 :y 0 })]
+            (body-impulse-vector (.> dog :body) { :x -60 :y 0 })]
            [(= key "d")
-            (body-impulse-vector (.> dog :body) { :x 30 :y 0 })]
+            (body-impulse-vector (.> dog :body) { :x 60 :y 0 })]
            [(= key "w")
-            (body-impulse-vector (.> dog :body) { :x 0 :y -30 })]
+            (body-impulse-vector (.> dog :body) { :x 0 :y -60 })]
            [(= key "s")
-            (body-impulse-vector (.> dog :body) { :x 0 :y 30 })]
+            (body-impulse-vector (.> dog :body) { :x 0 :y 60 })]
            [true]
            )))
 )
@@ -344,7 +344,7 @@
   (self world :update dt)
   (self (.> dog :anim) :update dt)
 
-  (let [(v (body-vector-to (.> dog :body) dog-home-x dog-home-y))]
+  (let [(v (scale-vector (body-vector-to (.> dog :body) dog-home-x dog-home-y) 3))]
     (self (.> dog :body) :applyForce (- 0 (.> v :x)) (- 0 (.> v :y))))
 
   ; update food list, removing and destroying objects marked for destruction

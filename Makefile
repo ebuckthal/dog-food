@@ -7,6 +7,9 @@ main.lua: main.lisp
 run: main.lua
 	love .
 
+test:
+	$(URN) helper-test.lisp --run
+
 clean:
 	rm -f main.lua
 

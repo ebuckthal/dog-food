@@ -6,15 +6,20 @@
 (import love/keyboard)
 (import love/audio)
 
+
 ; import from helpers.lisp
-(import helpers (bounded sample))
+(import helpers ())
 
 (define love :hidden (require "love"))
 (define anim8 :hidden (require "anim8"))
 (define new-animation (.> anim8 :newAnimation))
 (define new-grid (.> anim8 :newGrid))
 
-(define scale 2)
+(defun get-x (body) (self body :getX))
+(defun get-y (body) (self body :getY))
+
+(define dog-home-x 192)
+(define dog-home-y 192)
 
 ; game objects
 
@@ -62,7 +67,7 @@
   (.<! dog :has-food-type nil))
 
 (defun new-dog ()
-  (let* [(body (love/physics/new-body world 192 192 "kinematic"))
+  (let* [(body (love/physics/new-body world dog-home-x dog-home-y "dynamic"))
          ;; TODO: figure out sizes and how to offset shapes on bodies
          (face-shape (love/physics/new-polygon-shape
                       32 40
@@ -95,6 +100,9 @@
     (.<! dog :anims anims)
     (self face-fixture :setUserData {:type :dog})
     (self mouth-fixture :setUserData {:type :dog-mouth})
+    (self body :setGravityScale 0) ; no gravity on the dog plz
+    (self body :setAngularDamping 2) ; stop spinning one day 
+    (self body :setLinearDamping 2) 
     (set-dog-state dog :closed)
     dog))
 
@@ -122,18 +130,16 @@
     (body (love/physics/new-body world 600 600 "dynamic"))
     (shape (love/physics/new-circle-shape 32))
     (fixture (love/physics/new-fixture body shape))
-    (anim (new-animation (.> frames :doughnut) 0.1))
+    (anim (new-animation (.> frames :doughnut) 0.15))
     (sheet-key (sample (keys food-sheets)))]
 
     (self fixture :setDensity 0.5)
-    (self body :applyLinearImpulse -30 -50)
+    (self body :applyLinearImpulse -30 -80)
     (self fixture :setUserData {:type :food :food-type sheet-key})
     (self body :setAngularVelocity 0.1)
     { :body body :shape shape :fixture fixture :anim anim :sheet-key sheet-key })
   )
 
-(defmacro pself (obj key &args)
-  `(cdr (list (pcall (.> ,obj ,key) ,obj ,@args))))
 
 (defun draw-shapes (body)
   (do [(shape (map (lambda (fixture) (self fixture :getShape))
@@ -257,6 +263,19 @@
 (defun fixture-tell-body-to-die (fixture)
   (self (self fixture :getBody) :setUserData true))
 
+
+(defun body-distance-to (body x y)
+  (distance (self body :getX) (self body :getY) x y))
+
+(defun body-vector-to (body x y)
+  (vector-to (self body :getX) (self body :getY) x y))
+
+(defun body-impulse-vector (body v)
+  (self body :applyLinearImpulse (.> v :x) (.> v :y)))
+
+(defun body-force-vector (body v)
+  (self body :applyForce (.> v :x) (.> v :y)))
+
 ; callback for collision detection
 (defun begin-contact (a b coll)
   (collision-with
@@ -284,8 +303,16 @@
            [(= key "return")
             (dog-advance-state dog)]
            [(= key "space")
-            (self (.> sounds :throw) :play)
+            ; (self (.> sounds :throw) :play)
             (set! foods (cons (new-food) foods))]
+           [(= key "a")
+            (body-impulse-vector (.> dog :body) { :x -30 :y 0 })]
+           [(= key "d")
+            (body-impulse-vector (.> dog :body) { :x 30 :y 0 })]
+           [(= key "w")
+            (body-impulse-vector (.> dog :body) { :x 0 :y -30 })]
+           [(= key "s")
+            (body-impulse-vector (.> dog :body) { :x 0 :y 30 })]
            [true]
            )))
 )
@@ -293,6 +320,9 @@
 (defevent :update (dt)
   (self world :update dt)
   (self (.> dog :anim) :update dt)
+
+  (let [(v (body-vector-to (.> dog :body) dog-home-x dog-home-y))]
+    (self (.> dog :body) :applyForce (- 0 (.> v :x)) (- 0 (.> v :y))))
 
   ; update food list, removing and destroying objects marked for destruction
   (set! foods
@@ -305,14 +335,14 @@
                 foods))
 
   ; keys
-  (when (love/keyboard/is-down "w")
-    (self (.> dog :body) :setY (- (self (.> dog :body) :getY) 3)))
-  (when (love/keyboard/is-down "a")
-    (self (.> dog :body) :setX (- (self (.> dog :body) :getX) 3)))
-  (when (love/keyboard/is-down "s")
-    (self (.> dog :body) :setY (+ (self (.> dog :body) :getY) 3)))
-  (when (love/keyboard/is-down "d")
-    (self (.> dog :body) :setX (+ (self (.> dog :body) :getX) 3)))
+  ; (when (love/keyboard/is-down "w")
+  ;   (self (.> dog :body) :setY (- (self (.> dog :body) :getY) 3)))
+  ; (when (love/keyboard/is-down "a")
+  ;   (self (.> dog :body) :setX (- (self (.> dog :body) :getX) 3)))
+  ; (when (love/keyboard/is-down "s")
+  ;   (self (.> dog :body) :setY (+ (self (.> dog :body) :getY) 3)))
+  ; (when (love/keyboard/is-down "d")
+  ; (self (.> dog :body) :setX (+ (self (.> dog :body) :getX) 3)))
   (when (love/keyboard/is-down "q")
     (set-angle (.> dog :body) -0.1 -1 1))
   (when (love/keyboard/is-down "e")
@@ -322,6 +352,7 @@
   (draw-dog dog)
   (draw-shapes (.> dog :body))
 
+
   ; just draw all foods
   (do [(food foods)]
     (let* [(body (.> food :body))
@@ -330,6 +361,9 @@
            (x (self body :getX))
            (y (self body :getY))]
       (self anim :draw sheet x y 0 1 1 32 32)))
+
+  (love/graphics/set-color 1 0 0 0.2)
+  (love/graphics/circle "fill" dog-home-x dog-home-y 100)
 
   (love/graphics/set-color 0.5 0.8 0.3)
   (love/graphics/polygon

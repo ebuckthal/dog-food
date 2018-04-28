@@ -18,7 +18,7 @@
 (defun get-y (body) (self body :getY))
 
 (define dog-home-x 192)
-(define dog-home-y 192)
+(define dog-home-y 600)
 
 ; game objects
 

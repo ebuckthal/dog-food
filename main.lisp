@@ -6,7 +6,6 @@
 (import love/keyboard)
 (import love/audio)
 
-
 ; import from helpers.lisp
 (import helpers ())
 

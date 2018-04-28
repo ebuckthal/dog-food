@@ -23,6 +23,8 @@
 
 ; game objects
 
+(define score :mutable 0)
+
 (define world :mutable nil)
 (define canvas :mutable nil)
 (define ground :mutable nil)
@@ -63,7 +65,7 @@
   (.<! dog :has-food-type (.> (self food-fixture :getUserData) :food-type)))
 
 (defun dog-eat-food (dog)
-  ;; inc points here
+  (set! score (+ score 1))
   (.<! dog :has-food-type nil))
 
 (defun new-shape (body fixture-data shape)
@@ -304,6 +306,9 @@
    (lambda (food-fixture _) (fixture-tell-body-to-die food-fixture))))
 
 (defevent :load ()
+
+  (love/graphics/set-new-font "assets/Hack-Regular.ttf" 36)
+
   (love/window/set-mode 800 800 { :display 2 })
   (love/physics/set-meter 192)
 
@@ -366,6 +371,9 @@
   (when (love/keyboard/is-down "e")
     (set-angle (.> dog :body) 0.1 -1 1)))
 
+(defun draw-ui ()
+  (love/graphics/print score 20 20))
+
 (defevent :draw ()
   (draw-dog dog)
   (draw-shapes (.> dog :body))
@@ -391,4 +399,5 @@
           (self (.> ground :shape) :getPoints)))
 
   ; must set color back to white at end of draw
-  (love/graphics/set-color 1 1 1))
+  (love/graphics/set-color 1 1 1)
+  (draw-ui))

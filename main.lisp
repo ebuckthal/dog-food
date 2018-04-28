@@ -37,10 +37,25 @@
    (self fixture :setUserData {:type :ground})
    { :body body :shape shape :fixture fixture }))
 
+(defun dog-open-mouth-stuff (dog)
+  (self (.> dog :dog-bottom-face-fixture) :setSensor true))
+
+(defun dog-closed-mouth-stuff (dog)
+  (self (.> dog :dog-bottom-face-fixture) :setSensor false))
+
 (defun set-dog-state (dog new-state)
-  (.<! dog :state new-state)
-  (.<! dog :anim (.> (.> dog :anims) new-state))
-  (self (.> dog :anim) :resume))
+  (let [(cur-state (.> dog :state))]
+    (.<! dog :state new-state)
+    (.<! dog :anim (.> (.> dog :anims) new-state))
+    (self (.> dog :anim) :resume)
+    (when (and (= cur-state :open) (dog-has-food? dog))
+      (dog-eat-food dog))
+    (when (= cur-state :open)
+      (dog-open-mouth-stuff dog))
+    (when (= cur-state :closed)
+      (dog-closed-mouth-stuff dog))))
+
+
 
 (defun dog-advance-state (dog)
   (let* [(cur-state (.> dog :state))
@@ -49,8 +64,6 @@
                        [:opening :open]
                        [:open :closing]
                        [:closing :closed]))]
-    (when (and (= cur-state :open) (dog-has-food? dog))
-      (dog-eat-food dog))
     (set-dog-state dog next-state)))
 
 (defun dog-maybe-catch-food (dog food-fixture)
@@ -67,10 +80,11 @@
   (set! score (+ score 1))
   (.<! dog :has-food-type nil))
 
-(defun new-shape (body fixture-data shape)
+(defun new-fixture (body fixture-data is-sensor shape)
   (let [(fixture (love/physics/new-fixture body shape))]
     (self fixture :setUserData fixture-data)
-    shape))
+    (self fixture :setSensor is-sensor)
+    fixture))
 
 ;; turns a list of point lists into a list of shifted points (not a list of shifted list points mind you)
 (defun shift-vertices (x y point-alist)
@@ -79,10 +93,21 @@
 
 (defun new-dog ()
   (let* [(body (love/physics/new-body world dog-home-x dog-home-y "dynamic"))
+         (dog-bottom-face-fixture
+          (new-fixture body
+                       {:type :dog}
+                       false
+                       (apply love/physics/new-polygon-shape
+                              (shift-vertices -40 -60
+                                              '((0 62)
+                                                (86 62)
+                                                (138 86)
+                                                (0 92))))))
          (dog {:body body
                :state nil
                :anim nil
                :anims nil
+               :dog-bottom-face-fixture dog-bottom-face-fixture
                :dog-sprite-origin '(-60 -95)
                :food-sprite-origin '(70 -20)
                :has-food-type nil})
@@ -98,9 +123,10 @@
     (self body :setGravityScale 0) ; no gravity on the dog plz
     (self body :setAngularDamping 2) ; stop spinning one day
     (self body :setLinearDamping 2)
-    (new-shape
+    (new-fixture
            body
            {:type :dog}
+           false
            (apply love/physics/new-polygon-shape
                   (shift-vertices -40 -60
                                   '((0 0)
@@ -109,17 +135,10 @@
                                     (148 26)
                                     (86 62)
                                     (0 62)))))
-    (new-shape body
-               {:type :dog}
-               (apply love/physics/new-polygon-shape
-                      (shift-vertices -40 -60
-                                      '((0 62)
-                                        (86 62)
-                                        (138 86)
-                                        (0 92)))))
-    (new-shape body
+    (new-fixture body
                {:type :dog-mouth}
-               (love/physics/new-rectangle-shape 118 102 50 20 0.1))
+               true
+               (love/physics/new-rectangle-shape 80 10 50 20 0.1))
     (set-dog-state dog :closed)
     dog))
 

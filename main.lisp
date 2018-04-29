@@ -469,6 +469,25 @@
   (love/graphics/print score 20 20)
   )
 
+(defun draw-menu ()
+  (do ([option title-menu-options])
+    (let [(index (element-index option title-menu-options))]
+
+      ; draw a little shadow
+      (love/graphics/set-color 0 0 0 0.2)
+      (love/graphics/print option 252 (+ 402 (* 100 index)))
+
+      ; set color red if selected
+      (if (= title-menu-index index)
+        (love/graphics/set-color 1 0 0 1)
+        (love/graphics/set-color 1 1 1 1))
+
+      (love/graphics/print option 250 (+ 400 (* 100 index)))
+      )
+
+    ; reset color for others
+    (love/graphics/set-color 1 1 1 1)))
+
 (defevent :draw ()
   (when (> (get-time) (+ 0.1 last-font-time))
     (set! font-index (if (= 1 font-index) 2 1))
@@ -478,23 +497,7 @@
   (when (= scene "title")
     (draw-bg)
     (love/graphics/print "dog eat food world" 20 20)
-    (do ([option title-menu-options])
-      (let [(index (element-index option title-menu-options))]
-
-        ; draw a little shadow
-        (love/graphics/set-color 0 0 0 0.2)
-        (love/graphics/print option 252 (+ 402 (* 100 index)))
-
-        ; set color red if selected
-        (if (= title-menu-index index)
-          (love/graphics/set-color 1 0 0 1)
-          (love/graphics/set-color 1 1 1 1))
-
-        (love/graphics/print option 250 (+ 400 (* 100 index)))
-        )
-
-      ; reset color for others
-      (love/graphics/set-color 1 1 1 1)))
+    (draw-menu))
 
   (when (= scene "game")
     (draw-bg)

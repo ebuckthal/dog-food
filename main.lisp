@@ -425,13 +425,14 @@
 
     ; update food list, removing and destroying objects marked for destruction
     (set! foods
-          (reduce (lambda (foods food)
-                    (self (.> food :anim) :update dt)
-                    (case (self (.> food :body) :getUserData)
-                      [nil (cons food foods)]
-                      [true (self (.> food :body) :destroy) foods]))
-                  '()
-                  foods))
+      (reduce
+        (lambda (foods food)
+          (self (.> food :anim) :update dt)
+          (case (self (.> food :body) :getUserData)
+            [nil (cons food foods)]
+            [true (self (.> food :body) :destroy) foods]))
+        '()
+        foods))
 
     (when (love/keyboard/is-down "q")
       (set-angle (.> dog :body) -0.1 -1 1))

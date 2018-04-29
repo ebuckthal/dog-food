@@ -412,6 +412,19 @@
   (.<! love :keypressed on-keypress)
 )
 
+(define time-last-food :mutable nil)
+(define time-delta-food 1)
+
+(defun food-magic ()
+  (set! time-last-food
+    (cond
+      [(nil? time-last-food)
+       (get-time)]
+      [(> (- (get-time) time-last-food) time-delta-food)
+       (set! foods (cons (new-food) foods))]
+      [else time-last-food]))
+  )
+
 (defevent :update (dt)
   (when (= scene "title"))
 
@@ -419,6 +432,8 @@
     (flux/update dt)
     (self world :update dt)
     (self (.> dog :anim) :update dt)
+
+    (food-magic)
 
     (let [(v (scale-vector (body-vector-to (.> dog :body) dog-home-x dog-home-y) 3))]
       (self (.> dog :body) :applyForce (- 0 (.> v :x)) (- 0 (.> v :y))))

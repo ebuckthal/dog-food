@@ -11,18 +11,20 @@
 
 (defun update (dt)
   (set! current-time (+ current-time dt))
-  (when (> current-time
-           (+ timer-interval timer-last-interval))
+
+  ; when interval time has passed
+  (when (> current-time (+ timer-interval timer-last-interval))
     (set! timer-last-interval current-time)
-    (print! "maybe thing will happen?")
+
+    ; if our random chance passes
     (when (< (random) timer-percent)
       ; call the callback
       (timer-fn timer-last-recur)
+      ; record the time
       (set! timer-last-recur current-time)))
   )
 
 (defun on-percent-chance (percent interval fn)
-  (print! "registered")
   (set! timer-start current-time)
   (set! timer-last-recur current-time)
   (set! timer-last-interval current-time)

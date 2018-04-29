@@ -72,7 +72,8 @@
     (.<! dog :anim (.> (.> dog :anims) new-state))
     (self (.> dog :anim) :resume)
     (when (and (= cur-state :open) (dog-has-food? dog))
-      (dog-eat-food dog))
+      (dog-eat-food dog)
+      (self (.> sounds :eat) :play))
     (when (= cur-state :open)
       (dog-open-mouth-stuff dog))
     (when (= cur-state :closed)
@@ -270,6 +271,7 @@
 
 (define sounds {
   :throw (love/audio/new-source "assets/throw.wav" "static")
+  :eat (love/audio/new-source "assets/eat.wav" "static")
   })
 
 (define grids {

@@ -10,9 +10,14 @@
 (import helpers ())
 
 (define love :hidden (require "love"))
+
 (define anim8 :hidden (require "anim8"))
 (define new-animation (.> anim8 :newAnimation))
 (define new-grid (.> anim8 :newGrid))
+
+(define flux :hidden (require "flux"))
+(define flux/update (.> flux :update))
+(define flux/to (.> flux :to))
 
 (defun get-x (body) (self body :getX))
 (defun get-y (body) (self body :getY))
@@ -365,6 +370,22 @@
       (body-impulse-vector (.> dog :body) { :x 0 :y 60 })))
   )
 
+(define sun-position {:x 300 :y 0})
+
+(defun sun-tween-one ()
+  (debug sun-position)
+  (self (self (flux/to sun-position 3 {:x 320 :y -10})
+              :oncomplete sun-tween-two)
+        :ease "sineinout"))
+(defun sun-tween-two ()
+  (self (self (flux/to sun-position 3 {:x 300 :y -10})
+              :oncomplete sun-tween-three)
+        :ease "sineinout"))
+(defun sun-tween-three ()
+  (self (self (flux/to sun-position 3 {:x 300 :y 0})
+              :oncomplete sun-tween-one)
+        :ease "sineinout"))
+
 (defevent :load ()
   (love/graphics/set-new-font "assets/Hack-Regular.ttf" 36)
 
@@ -374,6 +395,9 @@
   (set! world (love/physics/new-world 0 (* 9.81 192) true))
   (set! ground (new-ground))
   (set! dog (new-dog))
+
+  ;; start some tweens
+  (sun-tween-one)
 
   ; callbacks?
   (self world :setCallbacks begin-contact nil nil nil)
@@ -386,6 +410,7 @@
   (when (= scene "title"))
 
   (when (= scene "game")
+    (flux/update dt)
     (self world :update dt)
     (self (.> dog :anim) :update dt)
 
@@ -411,9 +436,22 @@
 
 (define bg-sky (love/graphics/new-image "assets/sky.png"))
 (define bg-sun (love/graphics/new-image "assets/sun.png"))
+(defun draw-sun ()
+  (love/graphics/set-color 1 1 1 1)
+  (love/graphics/draw bg-sun (.> sun-position :x) (.> sun-position :y)))
+
 (defun draw-bg ()
   (love/graphics/draw bg-sky 0 0)
-  (love/graphics/draw bg-sun -200 -200))
+
+  (love/graphics/set-color 0.2 0.2 1 0.2)
+  (love/graphics/rectangle "fill" 0 0 800 800)
+
+  (draw-sun)
+
+  (love/graphics/set-color 0.2 0.2 1 0.1)
+  (love/graphics/rectangle "fill" 0 0 800 800)
+  (love/graphics/set-color 1 1 1 1)
+  )
 (defun draw-ui ()
   (love/graphics/print score 20 20))
 
@@ -432,7 +470,7 @@
   (when (= scene "game")
     (draw-bg)
     (draw-dog dog)
-    (draw-shapes (.> dog :body))
+    ;;(draw-shapes (.> dog :body))
 
 
     ; just draw all foods
@@ -445,7 +483,7 @@
         (self anim :draw sheet x y 0 1 1 32 32)))
 
     (love/graphics/set-color 1 0 0 0.2)
-    (love/graphics/circle "fill" dog-home-x dog-home-y 100)
+    ;;(love/graphics/circle "fill" dog-home-x dog-home-y 100)
 
     (love/graphics/set-color 0.5 0.8 0.3)
     (love/graphics/polygon

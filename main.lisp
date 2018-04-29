@@ -42,7 +42,7 @@
 (define dog :mutable nil)
 (define foods :mutable '())
 
-(define title-menu-options '("new game" "credits"))
+(define title-menu-options '("new game" "how to play" "credits"))
 (define title-menu-index :mutable 1)
 
 
@@ -364,7 +364,12 @@
     (when (= key "up")
       (set! title-menu-index (title-menu-next-index -1)))
     (when (= key "return")
-      (set! scene "game")))
+      (when (= (nth title-menu-options title-menu-index) "new game")
+        (set! scene "game"))
+      (when (= (nth title-menu-options title-menu-index) "how to play")
+        (set! scene "how-to"))
+      (when (= (nth title-menu-options title-menu-index) "credits")
+        (set! scene "credits"))))
 
   (when (= scene "game")
     (when (= key "escape")
@@ -382,6 +387,14 @@
       (body-impulse-vector (.> dog :body) { :x 0 :y -60 }))
     (when (= key "s")
       (body-impulse-vector (.> dog :body) { :x 0 :y 60 })))
+
+  (when (= scene "how-to")
+    (when (= key "escape")
+      (set! scene "title")))
+
+  (when (= scene "credits")
+    (when (= key "escape")
+      (set! scene "title")))
   )
 
 (defmacro make-tween (name next obj time newobj)
@@ -565,6 +578,17 @@
     (draw-bg)
     (love/graphics/print "dog eat food world" 20 20)
     (draw-menu))
+
+  (when (= scene "how-to")
+    (draw-bg)
+    (love/graphics/print "eat all the food!" 40 240)
+    (love/graphics/print "enter to open mouth!" 40 320)
+    (love/graphics/print "enter again to eat!" 40 400)
+    (love/graphics/print "q or e to tilt head!" 40 480))
+
+  (when (= scene "credits")
+    (draw-bg)
+    (love/graphics/print "credits here!" 40 240))
 
   (when (= scene "game")
     (draw-bg)

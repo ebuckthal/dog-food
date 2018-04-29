@@ -392,11 +392,8 @@
         :ease "sineinout"))
 
 (defevent :load ()
-  ; (push! fonts (love/graphics/new-image-font "assets/test-font.png" "abcdefghijk"))
   (push! fonts (love/graphics/new-image-font "assets/test-font1.png" " abcdefghijklmnopqrstuvwxyz0123456789.,'!?"))
   (push! fonts (love/graphics/new-image-font "assets/test-font2.png" " abcdefghijklmnopqrstuvwxyz0123456789.,'!?"))
-
-  ; (love/graphics/set-new-font "assets/Hack-Regular.ttf" 36)
 
   (love/window/set-mode 800 800 { :display 2 })
   (love/physics/set-meter 192)

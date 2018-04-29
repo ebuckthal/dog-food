@@ -21,5 +21,8 @@
 
 (defun scale-vector (v scale)
   (let [(x (.> v :x))
-        (y (.> v :y))] 
+        (y (.> v :y))]
     { :x (* scale x) :y (* scale y) }))
+
+(defun random-range (lower upper)
+  (+ lower (* (- upper lower) (random))))

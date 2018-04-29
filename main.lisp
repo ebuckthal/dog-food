@@ -193,14 +193,18 @@
 
 (defun new-food ()
   (let* [
-    (body (love/physics/new-body world 600 600 "dynamic"))
+    (init-x (random-range 500 700))
+    (init-y (random-range 500 700))
+    (init-impulse-x (random-range -50 -40))
+    (init-impulse-y (random-range -100 -80))
+    (body (love/physics/new-body world init-x init-y "dynamic"))
     (shape (love/physics/new-circle-shape 32))
     (fixture (love/physics/new-fixture body shape))
     (anim (new-animation (.> frames :doughnut) 0.15))
     (sheet-key (sample (keys food-sheets)))]
 
     (self fixture :setDensity 0.5)
-    (self body :applyLinearImpulse -30 -80)
+    (self body :applyLinearImpulse init-impulse-x init-impulse-y)
     (self fixture :setUserData {:type :food :food-type sheet-key})
     (self body :setAngularVelocity 0.1)
     { :body body :shape shape :fixture fixture :anim anim :sheet-key sheet-key })

@@ -5,6 +5,7 @@
 (import love/window)
 (import love/keyboard)
 (import love/audio)
+(import love/timer ())
 
 ; import from helpers.lisp
 (import helpers ())
@@ -18,6 +19,10 @@
 (define flux :hidden (require "flux"))
 (define flux/update (.> flux :update))
 (define flux/to (.> flux :to))
+
+(define fonts '())
+(define font-index :mutable 1)
+(define last-font-time :mutable (get-time))
 
 (defun get-x (body) (self body :getX))
 (defun get-y (body) (self body :getY))
@@ -387,7 +392,11 @@
         :ease "sineinout"))
 
 (defevent :load ()
-  (love/graphics/set-new-font "assets/Hack-Regular.ttf" 36)
+  ; (push! fonts (love/graphics/new-image-font "assets/test-font.png" "abcdefghijk"))
+  (push! fonts (love/graphics/new-image-font "assets/test-font1.png" " abcdefghijklmnopqrstuvwxyz0123456789.,'!?"))
+  (push! fonts (love/graphics/new-image-font "assets/test-font2.png" " abcdefghijklmnopqrstuvwxyz0123456789.,'!?"))
+
+  ; (love/graphics/set-new-font "assets/Hack-Regular.ttf" 36)
 
   (love/window/set-mode 800 800 { :display 2 })
   (love/physics/set-meter 192)
@@ -456,12 +465,18 @@
   (love/graphics/print score 20 20))
 
 (defevent :draw ()
+  (when (> (get-time) (+ 0.1 last-font-time))
+    (set! font-index (if (= 1 font-index) 2 1))
+    (set! last-font-time (get-time))
+    (love/graphics/set-font (nth fonts font-index) 24))
+
   (when (= scene "title")
-    (love/graphics/print "itsa DOG EAT FOOD WORLD" 20 20)
+    (love/graphics/print "dog eat dog world" 20 20)
     (do ([option title-menu-options])
       (let [(index (element-index option title-menu-options))]
         (when (= title-menu-index index)
           (love/graphics/set-color 1 0 0 1))
+
         (love/graphics/print option 250 (+ 100 (* 50 index))))
 
       ; reset color for others

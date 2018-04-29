@@ -9,6 +9,7 @@
 
 ; import from helpers.lisp
 (import helpers ())
+(import timer timer)
 
 (define love :hidden (require "love"))
 
@@ -186,6 +187,9 @@
                 (.> dog :anim)
                 dog-sheet
                 (.> dog :dog-sprite-origin)))
+
+(defun spawn-food ()
+  (set! foods (cons (new-food) foods)))
 
 (defun new-food ()
   (let* [
@@ -366,7 +370,7 @@
       (dog-advance-state dog))
     (when (= key "space")
       ; (self (.> sounds :throw) :play)
-      (set! foods (cons (new-food) foods)))
+      (spawn-food))
     (when (= key "a")
       (body-impulse-vector (.> dog :body) { :x -60 :y 0 }))
     (when (= key "d")
@@ -412,20 +416,13 @@
 
   ; one-shot keys
   (.<! love :keypressed on-keypress)
+
+  ; setup callback for food spawning
+  (timer/on-percent-chance 0.3 0.3 (lambda () (spawn-food)))
 )
 
 (define time-last-food :mutable nil)
 (define time-delta-food 1)
-
-(defun food-magic ()
-  (set! time-last-food
-    (cond
-      [(nil? time-last-food)
-       (get-time)]
-      [(> (- (get-time) time-last-food) time-delta-food)
-       (set! foods (cons (new-food) foods))]
-      [else time-last-food]))
-  )
 
 (defevent :update (dt)
   (when (= scene "title"))
@@ -435,7 +432,7 @@
     (self world :update dt)
     (self (.> dog :anim) :update dt)
 
-    (food-magic)
+    (timer/update dt)
 
     (let [(v (scale-vector (body-vector-to (.> dog :body) dog-home-x dog-home-y) 3))]
       (self (.> dog :body) :applyForce (- 0 (.> v :x)) (- 0 (.> v :y))))

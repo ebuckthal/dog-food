@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 URN := ~/.urn/bin/urn.lua
 
-main.lua: main.lisp 
+main.lua: *.lisp 
 	$(URN) main.lisp -o main
 
 run: main.lua

@@ -402,15 +402,6 @@
                   '()
                   foods))
 
-    ; keys
-    ; (when (love/keyboard/is-down "w")
-    ;   (self (.> dog :body) :setY (- (self (.> dog :body) :getY) 3)))
-    ; (when (love/keyboard/is-down "a")
-    ;   (self (.> dog :body) :setX (- (self (.> dog :body) :getX) 3)))
-    ; (when (love/keyboard/is-down "s")
-    ;   (self (.> dog :body) :setY (+ (self (.> dog :body) :getY) 3)))
-    ; (when (love/keyboard/is-down "d")
-    ; (self (.> dog :body) :setX (+ (self (.> dog :body) :getX) 3)))
     (when (love/keyboard/is-down "q")
       (set-angle (.> dog :body) -0.1 -1 1))
     (when (love/keyboard/is-down "e")

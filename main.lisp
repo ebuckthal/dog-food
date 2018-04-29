@@ -98,7 +98,6 @@
 (defun dog-has-food? (dog) (not (= nil (.> dog :has-food-type))))
 
 (defun dog-catch-food (dog food-fixture)
-  (print! "dog caught food")
   (.<! dog :has-food-type (.> (self food-fixture :getUserData) :food-type))
   (fixture-tell-body-to-die food-fixture)
   )

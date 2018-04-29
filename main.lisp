@@ -21,6 +21,7 @@
 (define dog-home-y 600)
 
 ; game objects
+(define scene :mutable "title")
 
 (define score :mutable 0)
 
@@ -29,6 +30,18 @@
 (define ground :mutable nil)
 (define dog :mutable nil)
 (define foods :mutable '())
+
+(define title-menu-options '("new game" "credits"))
+(define title-menu-index :mutable 1)
+
+
+(defun title-menu-next-index (delta)
+  (let [(next-index (+ delta title-menu-index))]
+    (cond
+      [(> next-index (n title-menu-options)) title-menu-index]
+      [(< next-index 1) title-menu-index]
+      [true next-index])
+    ))
 
 (defun new-ground ()
   (let* [(body (love/physics/new-body world (/ 800 2) 775 "static"))
@@ -75,7 +88,8 @@
 (defun dog-catch-food (dog food-fixture)
   (print! "dog caught food")
   (.<! dog :has-food-type (.> (self food-fixture :getUserData) :food-type))
-  (fixture-tell-body-to-die food-fixture))
+  (fixture-tell-body-to-die food-fixture)
+  )
 
 (defun dog-eat-food (dog)
   (set! score (+ score 1))
@@ -324,8 +338,34 @@
    :food :ground a b
    (lambda (food-fixture _) (fixture-tell-body-to-die food-fixture))))
 
-(defevent :load ()
+(defun on-keypress (key is-repeat)
+  (when (= scene "title")
+    (when (= key "down")
+      (set! title-menu-index (title-menu-next-index 1)))
+    (when (= key "up")
+      (set! title-menu-index (title-menu-next-index -1)))
+    (when (= key "return")
+      (set! scene "game")))
 
+  (when (= scene "game")
+    (when (= key "escape")
+      (set! scene "title"))
+    (when (= key "return")
+      (dog-advance-state dog))
+    (when (= key "space")
+      ; (self (.> sounds :throw) :play)
+      (set! foods (cons (new-food) foods)))
+    (when (= key "a")
+      (body-impulse-vector (.> dog :body) { :x -60 :y 0 }))
+    (when (= key "d")
+      (body-impulse-vector (.> dog :body) { :x 60 :y 0 }))
+    (when (= key "w")
+      (body-impulse-vector (.> dog :body) { :x 0 :y -60 }))
+    (when (= key "s")
+      (body-impulse-vector (.> dog :body) { :x 0 :y 60 })))
+  )
+
+(defevent :load ()
   (love/graphics/set-new-font "assets/Hack-Regular.ttf" 36)
 
   (love/window/set-mode 800 800 { :display 2 })
@@ -339,84 +379,85 @@
   (self world :setCallbacks begin-contact nil nil nil)
 
   ; one-shot keys
-  (.<! love :keypressed
-       (lambda (key isRepeat)
-         (cond
-           [(= key "return")
-            (dog-advance-state dog)]
-           [(= key "space")
-            ; (self (.> sounds :throw) :play)
-            (set! foods (cons (new-food) foods))]
-           [(= key "a")
-            (body-impulse-vector (.> dog :body) { :x -60 :y 0 })]
-           [(= key "d")
-            (body-impulse-vector (.> dog :body) { :x 60 :y 0 })]
-           [(= key "w")
-            (body-impulse-vector (.> dog :body) { :x 0 :y -60 })]
-           [(= key "s")
-            (body-impulse-vector (.> dog :body) { :x 0 :y 60 })]
-           [true]
-           )))
+  (.<! love :keypressed on-keypress)
 )
 
 (defevent :update (dt)
-  (self world :update dt)
-  (self (.> dog :anim) :update dt)
+  (when (= scene "title"))
 
-  (let [(v (scale-vector (body-vector-to (.> dog :body) dog-home-x dog-home-y) 3))]
-    (self (.> dog :body) :applyForce (- 0 (.> v :x)) (- 0 (.> v :y))))
+  (when (= scene "game")
+    (self world :update dt)
+    (self (.> dog :anim) :update dt)
 
-  ; update food list, removing and destroying objects marked for destruction
-  (set! foods
-        (reduce (lambda (foods food)
-                  (self (.> food :anim) :update dt)
-                  (case (self (.> food :body) :getUserData)
-                    [nil (cons food foods)]
-                    [true (self (.> food :body) :destroy) foods]))
-                '()
-                foods))
+    (let [(v (scale-vector (body-vector-to (.> dog :body) dog-home-x dog-home-y) 3))]
+      (self (.> dog :body) :applyForce (- 0 (.> v :x)) (- 0 (.> v :y))))
 
-  ; keys
-  ; (when (love/keyboard/is-down "w")
-  ;   (self (.> dog :body) :setY (- (self (.> dog :body) :getY) 3)))
-  ; (when (love/keyboard/is-down "a")
-  ;   (self (.> dog :body) :setX (- (self (.> dog :body) :getX) 3)))
-  ; (when (love/keyboard/is-down "s")
-  ;   (self (.> dog :body) :setY (+ (self (.> dog :body) :getY) 3)))
-  ; (when (love/keyboard/is-down "d")
-  ; (self (.> dog :body) :setX (+ (self (.> dog :body) :getX) 3)))
-  (when (love/keyboard/is-down "q")
-    (set-angle (.> dog :body) -0.1 -1 1))
-  (when (love/keyboard/is-down "e")
-    (set-angle (.> dog :body) 0.1 -1 1)))
+    ; update food list, removing and destroying objects marked for destruction
+    (set! foods
+          (reduce (lambda (foods food)
+                    (self (.> food :anim) :update dt)
+                    (case (self (.> food :body) :getUserData)
+                      [nil (cons food foods)]
+                      [true (self (.> food :body) :destroy) foods]))
+                  '()
+                  foods))
+
+    ; keys
+    ; (when (love/keyboard/is-down "w")
+    ;   (self (.> dog :body) :setY (- (self (.> dog :body) :getY) 3)))
+    ; (when (love/keyboard/is-down "a")
+    ;   (self (.> dog :body) :setX (- (self (.> dog :body) :getX) 3)))
+    ; (when (love/keyboard/is-down "s")
+    ;   (self (.> dog :body) :setY (+ (self (.> dog :body) :getY) 3)))
+    ; (when (love/keyboard/is-down "d")
+    ; (self (.> dog :body) :setX (+ (self (.> dog :body) :getX) 3)))
+    (when (love/keyboard/is-down "q")
+      (set-angle (.> dog :body) -0.1 -1 1))
+    (when (love/keyboard/is-down "e")
+      (set-angle (.> dog :body) 0.1 -1 1)))
+
+  )
 
 (defun draw-ui ()
   (love/graphics/print score 20 20))
 
 (defevent :draw ()
-  (draw-dog dog)
-  (draw-shapes (.> dog :body))
+  (when (= scene "title")
+    (love/graphics/print "itsa DOG EAT FOOD WORLD" 20 20)
+    (do ([option title-menu-options])
+      (let [(index (element-index option title-menu-options))]
+        (when (= title-menu-index index)
+          (love/graphics/set-color 1 0 0 1))
+        (love/graphics/print option 250 (+ 100 (* 50 index))))
+
+      ; reset color for others
+      (love/graphics/set-color 1 1 1 1)))
+
+  (when (= scene "game")
+    (draw-dog dog)
+    (draw-shapes (.> dog :body))
 
 
-  ; just draw all foods
-  (do [(food foods)]
-    (let* [(body (.> food :body))
-           (anim (.> food :anim))
-           (sheet (.> food-sheets (.> food :sheet-key)))
-           (x (self body :getX))
-           (y (self body :getY))]
-      (self anim :draw sheet x y 0 1 1 32 32)))
+    ; just draw all foods
+    (do [(food foods)]
+      (let* [(body (.> food :body))
+            (anim (.> food :anim))
+            (sheet (.> food-sheets (.> food :sheet-key)))
+            (x (self body :getX))
+            (y (self body :getY))]
+        (self anim :draw sheet x y 0 1 1 32 32)))
 
-  (love/graphics/set-color 1 0 0 0.2)
-  (love/graphics/circle "fill" dog-home-x dog-home-y 100)
+    (love/graphics/set-color 1 0 0 0.2)
+    (love/graphics/circle "fill" dog-home-x dog-home-y 100)
 
-  (love/graphics/set-color 0.5 0.8 0.3)
-  (love/graphics/polygon
-    "fill"
-    (self (.> ground :body)
-          :getWorldPoints
-          (self (.> ground :shape) :getPoints)))
+    (love/graphics/set-color 0.5 0.8 0.3)
+    (love/graphics/polygon
+      "fill"
+      (self (.> ground :body)
+            :getWorldPoints
+            (self (.> ground :shape) :getPoints)))
 
-  ; must set color back to white at end of draw
-  (love/graphics/set-color 1 1 1)
-  (draw-ui))
+    ; must set color back to white at end of draw
+    (love/graphics/set-color 1 1 1)
+    (draw-ui))
+)

@@ -409,6 +409,11 @@
 
   )
 
+(define bg-sky (love/graphics/new-image "assets/sky.png"))
+(define bg-sun (love/graphics/new-image "assets/sun.png"))
+(defun draw-bg ()
+  (love/graphics/draw bg-sky 0 0)
+  (love/graphics/draw bg-sun -200 -200))
 (defun draw-ui ()
   (love/graphics/print score 20 20))
 
@@ -425,6 +430,7 @@
       (love/graphics/set-color 1 1 1 1)))
 
   (when (= scene "game")
+    (draw-bg)
     (draw-dog dog)
     (draw-shapes (.> dog :body))
 

@@ -381,21 +381,55 @@
       (body-impulse-vector (.> dog :body) { :x 0 :y 60 })))
   )
 
-(define sun-position {:x 300 :y 0})
+(defmacro make-tween (name next obj time newobj)
+  `(defun ,name ()
+     (self (self (flux/to ,obj ,time ,newobj)
+                 :oncomplete ,next)
+           :ease "sineinout")))
 
-(defun sun-tween-one ()
-  (debug sun-position)
-  (self (self (flux/to sun-position 3 {:x 320 :y -10})
-              :oncomplete sun-tween-two)
-        :ease "sineinout"))
-(defun sun-tween-two ()
-  (self (self (flux/to sun-position 3 {:x 300 :y -10})
-              :oncomplete sun-tween-three)
-        :ease "sineinout"))
-(defun sun-tween-three ()
-  (self (self (flux/to sun-position 3 {:x 300 :y 0})
-              :oncomplete sun-tween-one)
-        :ease "sineinout"))
+(define sun-position {:x 300 :y 0})
+(make-tween st1 st2
+            sun-position
+            3
+            {:x 320 :y -10})
+(make-tween st2 st3
+            sun-position
+            3
+            {:x 300 :y -10})
+(make-tween st3 st1
+            sun-position
+            3
+            {:x 300 :y 0})
+
+(define close-grass-position {:x -50 :y 400})
+(make-tween close-grass-1 close-grass-2
+            close-grass-position
+            3
+            {:x -45})
+(make-tween close-grass-2 close-grass-1
+            close-grass-position
+            3
+            {:x -50})
+
+(define mid-grass-position {:x -50 :y 400})
+(make-tween mid-grass-1 mid-grass-2
+            mid-grass-position
+            3
+            {:x -53})
+(make-tween mid-grass-2 mid-grass-1
+            mid-grass-position
+            3
+            {:x -50})
+
+(define far-grass-position {:x -50 :y 400})
+(make-tween far-grass-1 far-grass-2
+            far-grass-position
+            3
+            {:x -48})
+(make-tween far-grass-2 far-grass-1
+            far-grass-position
+            3
+            {:x -50})
 
 (defevent :load ()
   (push! fonts (love/graphics/new-image-font "assets/test-font1.png" " abcdefghijklmnopqrstuvwxyz0123456789.,'!?"))
@@ -409,7 +443,10 @@
   (set! dog (new-dog))
 
   ;; start some tweens
-  (sun-tween-one)
+  (st1)
+  (close-grass-1)
+  (mid-grass-1)
+  (far-grass-1)
 
   ; callbacks?
   (self world :setCallbacks begin-contact nil nil nil)
@@ -457,6 +494,10 @@
 
 (define bg-sky (love/graphics/new-image "assets/sky.png"))
 (define bg-sun (love/graphics/new-image "assets/sun.png"))
+(define close-grass (love/graphics/new-image "assets/close-grass.png"))
+(define mid-grass (love/graphics/new-image "assets/mid-grass.png"))
+(define far-grass (love/graphics/new-image "assets/far-grass.png"))
+
 (defun draw-sun ()
   (love/graphics/set-color 1 1 1 1)
   (love/graphics/draw bg-sun (.> sun-position :x) (.> sun-position :y)))
@@ -472,7 +513,18 @@
   (love/graphics/set-color 0.2 0.2 1 0.1)
   (love/graphics/rectangle "fill" 0 0 800 800)
   (love/graphics/set-color 1 1 1 1)
-  )
+  (love/graphics/draw far-grass
+                      (.> far-grass-position :x)
+                      (.> far-grass-position :y))
+  (love/graphics/draw mid-grass
+                      (.> mid-grass-position :x)
+                      (.> mid-grass-position :y)))
+
+(defun draw-fg ()
+  (love/graphics/set-color 1 1 1 1)
+  (love/graphics/draw close-grass
+                      (.> close-grass-position :x)
+                      (.> close-grass-position :y)))
 
 (defun draw-ui ()
   (love/graphics/set-color 0 0 0 0.2)
@@ -538,5 +590,6 @@
 
     ; must set color back to white at end of draw
     (love/graphics/set-color 1 1 1)
+    (draw-fg)
     (draw-ui))
 )

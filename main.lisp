@@ -471,13 +471,14 @@
     (love/graphics/set-font (nth fonts font-index) 24))
 
   (when (= scene "title")
-    (love/graphics/print "dog eat dog world" 20 20)
+    (draw-bg)
+    (love/graphics/print "dog eat food world" 20 20)
     (do ([option title-menu-options])
       (let [(index (element-index option title-menu-options))]
         (when (= title-menu-index index)
           (love/graphics/set-color 1 0 0 1))
 
-        (love/graphics/print option 250 (+ 100 (* 50 index))))
+        (love/graphics/print option 250 (+ 400 (* 100 index))))
 
       ; reset color for others
       (love/graphics/set-color 1 1 1 1)))

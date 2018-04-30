@@ -259,14 +259,6 @@
         [true (print! "no match, hmm...")])
       (love/graphics/set-color 1 1 1)))
 
-;; this function must return a function that can be called
-;; pcall(shape:getPoint)
-;; pcall(shape.getPoint, shape)
-(defun partial (fn &args)
-  (lambda (&moreargs) (apply fn (append args moreargs))))
-
-(defun my-get-point (shape)
-  (partial (.> shape :getPoint) shape))
 
 (defun draw-shapes-tests (body)
   (let* [(world (if body nil (love/physics/new-world 0 (* 9.81 192) true)))
@@ -605,8 +597,7 @@
   (love/graphics/set-color 0 0 0 0.2)
   (love/graphics/print score 22 22)
   (love/graphics/set-color 1 1 1 1)
-  (love/graphics/print score 20 20)
-  )
+  (love/graphics/print score 20 20))
 
 (defun draw-menu ()
   (do ([option title-menu-options])

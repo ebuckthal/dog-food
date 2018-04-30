@@ -48,6 +48,11 @@
                  :oncomplete ,next)
            :ease "sineinout")))
 
+;; this function must return a function that can be called
+;; pcall(shape:getPoint)
+;; pcall(shape.getPoint, shape)
+(defun partial (fn &args)
+  (lambda (&moreargs) (apply fn (append args moreargs))))
 
 ; self-wrappers
 (defun body/get-x (body) (self body :getX))

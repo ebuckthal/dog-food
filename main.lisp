@@ -405,6 +405,9 @@
    (lambda () (self (.> sounds :splat) :play))))
 
 (defun on-keypress (key is-repeat)
+  (when (= key "m")
+    (love/audio/set-volume (- 1 (love/audio/get-volume))))
+
   (when (= scene "title")
     (when (= key "down")
       (set! title-menu-index (title-menu-next-index 1)))
@@ -518,7 +521,7 @@
   (.<! love :keypressed on-keypress)
 
   ; setup callback for food spawning
-  (timer/on-percent-chance 0.3 0.3 (lambda () (spawn-food)))
+  (timer/on-percent-chance 0.3 0.5 (lambda () (spawn-food)))
 )
 
 (define time-last-food :mutable nil)

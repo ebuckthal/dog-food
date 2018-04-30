@@ -371,20 +371,6 @@
 (defun fixture-tell-body-to-die (fixture)
   (self (self fixture :getBody) :setUserData true))
 
-
-
-(defun body-impulse-vector (body v)
-  (self body :applyLinearImpulse (.> v :x) (.> v :y)))
-
-(defun body-force-vector (body v)
-  (self body :applyForce (.> v :x) (.> v :y)))
-
-(defun find-food-by-fixture (fixture)
-  (let [(index (find-index (lambda (food) (= (.> food :fixture) fixture)) foods))]
-    (if (nil? index)
-      nil
-      (nth foods index))))
-
 ; callback for collision detection
 (defun begin-contact (a b coll)
   (collision-with
@@ -415,13 +401,13 @@
       (when (= (.> dog :state) :closed)
         (dog-advance-state dog)))
     (when (= key "a")
-      (body-impulse-vector (.> dog :body) { :x -60 :y 0 }))
+      (body/apply-linear-impulse-vector (.> dog :body) { :x -60 :y 0 }))
     (when (= key "d")
-      (body-impulse-vector (.> dog :body) { :x 60 :y 0 }))
+      (body/apply-linear-impulse-vector (.> dog :body) { :x 60 :y 0 }))
     (when (= key "w")
-      (body-impulse-vector (.> dog :body) { :x 0 :y -60 }))
+      (body/apply-linear-impulse-vector (.> dog :body) { :x 0 :y -60 }))
     (when (= key "s")
-      (body-impulse-vector (.> dog :body) { :x 0 :y 60 })))
+      (body/apply-linear-impulse-vector (.> dog :body) { :x 0 :y 60 })))
 
   (when (= scene "how-to")
     (when (= key "escape")
@@ -650,12 +636,11 @@
     (draw-dog dog)
     ;;(draw-shapes (.> dog :body))
 
-
     ; just draw all foods
     (do [(food foods)]
       (let* [(body (.> food :body))
             (anim (.> food :anim))
-            (sheet (.> food-sheets (.> food :sheet-key))) ]
+            (sheet (.> food-sheets (.> food :sheet-key)))]
         (when (not (self body :isDestroyed))
           (self anim :draw
                 sheet (body/get-x body) (body/get-y body) 0 1 1 32 32))))

@@ -66,3 +66,6 @@
 
 (defun body/distance-to (body x y)
   (distance (body/get-x body) (body/get-y body) x y))
+
+(defun body/apply-linear-impulse-vector (body v)
+  (self body :applyLinearImpulse (.> v :x) (.> v :y)))

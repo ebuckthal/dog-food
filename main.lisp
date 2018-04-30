@@ -595,7 +595,7 @@
   (when (> (get-time) (+ font-delay-time last-font-time))
     (set! font-index (if (= 1 font-index) 2 1))
     (set! last-font-time (get-time))
-    (love/graphics/set-font (nth fonts font-index) 24))
+    (love/graphics/set-font (nth fonts font-index) 8))
 
   (when (= scene "title")
     (draw-bg)

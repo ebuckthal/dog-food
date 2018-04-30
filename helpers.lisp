@@ -73,3 +73,4 @@
 (defun fixture/get-body (fixture)
   (self fixture :getBody))
 
+(defun body/is-destroyed? (body) (self body :isDestroyed))

@@ -462,10 +462,6 @@
   (timer/on-percent-chance 0.3 0.5 (lambda () (spawn-food)))
 )
 
-(define time-last-food :mutable nil)
-(define time-delta-food 1)
-
-
 (defun update-music ()
   (when (not (= scene "game"))
     (with (music (.> sounds :music))

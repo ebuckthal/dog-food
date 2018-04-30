@@ -371,11 +371,6 @@
   (self (self fixture :getBody) :setUserData true))
 
 
-(defun body-distance-to (body x y)
-  (distance (self body :getX) (self body :getY) x y))
-
-(defun body-vector-to (body x y)
-  (vector-to (self body :getX) (self body :getY) x y))
 
 (defun body-impulse-vector (body v)
   (self body :applyLinearImpulse (.> v :x) (.> v :y)))
@@ -519,8 +514,6 @@
 (define time-last-food :mutable nil)
 (define time-delta-food 1)
 
-(defun get-speed (body)
-  (velocity-to-speed (pself body :getLinearVelocity)))
 
 (defun update-music ()
   (when (not (= scene "game"))
@@ -544,8 +537,14 @@
 
     (timer/update dt)
 
-    (let [(v (scale-vector (body-vector-to (.> dog :body) dog-home-x dog-home-y) 3))]
-      (self (.> dog :body) :applyForce (- 0 (.> v :x)) (- 0 (.> v :y))))
+    ; push the dog back to its home by applying force in opposite direction
+
+    (let* [(body (.> dog :body))
+           (vector-home (body/vector-to body dog-home-x dog-home-y))
+           (vector-scaled (scale-vector vector-home 2))
+           (x (- 0 (.> vector-scaled :x)))
+           (y (- 0 (.> vector-scaled :y)))]
+      (self body :applyForce x y))
 
     ; update food list, destroy if marked for destruction
     ; pause animation if moving too slowly
@@ -555,7 +554,7 @@
             (sheet (.> food-sheets (.> food :sheet-key)))]
         (self anim :update dt)
         (when (not (self body :isDestroyed))
-          (when (< (get-speed body) 100)
+          (when (< (body/get-speed body) 100)
             (self anim :pause))
           (when (self body :getUserData)
             (self body :destroy)))

@@ -52,3 +52,12 @@
 ; self-wrappers
 (defun body/get-x (body) (self body :getX))
 (defun body/get-y (body) (self body :getY))
+
+(defun body/get-speed (body)
+  (velocity-to-speed (pself body :getLinearVelocity)))
+
+(defun body/vector-to (body x y)
+  (vector-to (body/get-x body) (body/get-y body) x y))
+
+(defun body/distance-to (body x y)
+  (distance (body/get-x body) (body/get-y body) x y))

@@ -75,8 +75,11 @@
    (self fixture :setFriction 0.9)
    { :body body :shape shape :fixture fixture }))
 
+(define dog-open-mouth-time 0.5)
+
 (defun dog-open-mouth-stuff (dog)
-  (self (.> dog :dog-bottom-face-fixture) :setSensor true))
+  (self (.> dog :dog-bottom-face-fixture) :setSensor true)
+  (.<! dog :mouth-open-duration 0))
 
 (defun dog-closed-mouth-stuff (dog)
   (self (.> dog :dog-bottom-face-fixture) :setSensor false))
@@ -93,8 +96,6 @@
       (dog-open-mouth-stuff dog))
     (when (= cur-state :closed)
       (dog-closed-mouth-stuff dog))))
-
-
 
 (defun dog-advance-state (dog)
   (let* [(cur-state (.> dog :state))
@@ -119,6 +120,12 @@
 (defun dog-eat-food (dog)
   (set! score (+ score 1))
   (.<! dog :has-food-type nil))
+
+(defun dog-update (dt)
+  (when (= :open (.> dog :state))
+    (.<! dog :mouth-open-duration (+ (.> dog :mouth-open-duration) dt))
+    (when (> (.> dog :mouth-open-duration) dog-open-mouth-time)
+      (dog-advance-state dog))))
 
 (defun new-fixture (body fixture-data is-sensor shape)
   (let [(fixture (love/physics/new-fixture body shape))]
@@ -150,6 +157,7 @@
                :dog-bottom-face-fixture dog-bottom-face-fixture
                :dog-sprite-origin '(-60 -95)
                :food-sprite-origin '(70 -20)
+               :mouth-open-duration 0
                :has-food-type nil})
          (anims {:closed (new-animation (.> frames :dog-closed) 0.1 "pauseAtEnd")
                  :opening (new-animation (.> frames :dog-opening)
@@ -407,7 +415,8 @@
     (when (= key "escape")
       (set! scene "title"))
     (when (= key "return")
-      (dog-advance-state dog))
+      (when (= (.> dog :state) :closed)
+        (dog-advance-state dog)))
     (when (= key "space")
       ; (self (.> sounds :throw) :play)
       (spawn-food))
@@ -532,6 +541,7 @@
     (flux/update dt)
     (self world :update dt)
     (self (.> dog :anim) :update dt)
+    (dog-update dt)
 
     (timer/update dt)
 

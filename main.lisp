@@ -599,7 +599,7 @@
 
   (when (= scene "title")
     (draw-bg)
-    (love/graphics/print "dog eat food world" 20 20)
+    (love/graphics/print "dog eat food world" 80 240)
     (draw-menu))
 
   (when (= scene "how-to")

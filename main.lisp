@@ -366,7 +366,7 @@
   (when (= scene "game")
     (when (= key "escape")
       (set! scene "title"))
-    (when (= key "return")
+    (when (= key "space")
       (when (= (.> dog :state) :closed)
         (dog-advance-state dog)))
     (when (= key "a")
@@ -513,9 +513,9 @@
             (self body :destroy)))
         ))
 
-    (when (love/keyboard/is-down "q")
+    (when (love/keyboard/is-down "j")
       (set-angle (.> dog :body) -0.1 -1 1))
-    (when (love/keyboard/is-down "e")
+    (when (love/keyboard/is-down "k")
       (set-angle (.> dog :body) 0.1 -1 1)))
 
   (update-music))
@@ -580,16 +580,19 @@
 
 (defun draw-how-to ()
   (love/graphics/set-color 0 0 0 0.5)
-  (love/graphics/print "eat all the food!" 42 242)
-  (love/graphics/print "enter to open mouth!" 42 322)
-  (love/graphics/print "enter again to eat!" 42 402)
-  (love/graphics/print "q or e to tilt head!" 42 482)
+
+  (love/graphics/print "catch all the food!" 40 160)
+  (love/graphics/print "space to open mouth!" 40 240)
+  (love/graphics/print "j or k to tilt head!" 40 320)
+  (love/graphics/print "m to mute the sound!" 40 400)
+  (love/graphics/print "esc back to title!" 40 480)
 
   (love/graphics/set-color 1 1 1 1)
-  (love/graphics/print "eat all the food!" 40 240)
-  (love/graphics/print "enter to open mouth!" 40 320)
-  (love/graphics/print "enter again to eat!" 40 400)
-  (love/graphics/print "q or e to tilt head!" 40 480))
+  (love/graphics/print "catch all the food!" 40 160)
+  (love/graphics/print "space to open mouth!" 40 240)
+  (love/graphics/print "j or k to tilt head!" 40 320)
+  (love/graphics/print "m to mute the sound!" 40 400)
+  (love/graphics/print "esc back to title!" 40 480))
 
 (defevent :draw ()
   ; do update for which font to draw

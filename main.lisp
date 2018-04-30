@@ -586,10 +586,11 @@
 
   (when (= scene "how-to")
     (draw-bg)
-    (love/graphics/print "eat all the food!" 40 240)
-    (love/graphics/print "enter to open mouth!" 40 320)
-    (love/graphics/print "enter again to eat!" 40 400)
-    (love/graphics/print "q or e to tilt head!" 40 480))
+    (love/graphics/print "catch all the food!" 40 160)
+    (love/graphics/print "enter to open mouth!" 40 240)
+    (love/graphics/print "q or e to tilt head!" 40 320)
+    (love/graphics/print "m to mute the sound!" 40 400)
+    (love/graphics/print "esc back to title!" 40 480))
 
   (when (= scene "credits")
     (draw-bg)

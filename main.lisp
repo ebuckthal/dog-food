@@ -545,6 +545,7 @@
 (define close-grass (love/graphics/new-image "assets/close-grass.png"))
 (define mid-grass (love/graphics/new-image "assets/mid-grass.png"))
 (define far-grass (love/graphics/new-image "assets/far-grass.png"))
+(define title-image (love/graphics/new-image "assets/title.png"))
 
 (defun draw-sun ()
   (love/graphics/set-color 1 1 1 1)
@@ -634,7 +635,7 @@
 
   (when (= scene "title")
     (draw-bg)
-    (love/graphics/print "dog eat food world" 80 240)
+    (love/graphics/draw title-image 0 50)
     (draw-menu))
 
   (when (= scene "how-to")

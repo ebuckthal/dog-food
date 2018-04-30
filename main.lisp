@@ -56,7 +56,7 @@
       [true next-index])))
 
 (defun new-ground ()
-  (let* [(body (love/physics/new-body world (/ 800 2) 900 "static"))
+  (let* [(body (love/physics/new-body world (/ 800 2) 800 "static"))
          (shape (love/physics/new-rectangle-shape 800 25))
          (fixture (love/physics/new-fixture body shape))]
    (self fixture :setUserData {:type :ground})

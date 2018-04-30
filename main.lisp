@@ -5,6 +5,7 @@
 (import love/window)
 (import love/keyboard)
 (import love/audio)
+(import love/timer ())
 
 ; import from helpers.lisp
 (import helpers ())

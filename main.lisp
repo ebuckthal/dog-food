@@ -490,7 +490,7 @@
   (.<! love :keypressed on-keypress)
 
   ; setup callback for food spawning
-  (timer/on-percent-chance 0.3 0.5 (lambda () (spawn-food)))
+  (timer/on-percent-chance 0.5 0.5 (lambda () (spawn-food)))
 )
 
 (defun update-music ()

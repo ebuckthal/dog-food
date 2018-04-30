@@ -20,7 +20,7 @@ watch:
 
 dist/$(FILE_NAME).love: main.lua
 	mkdir -p dist
-	zip -9 dist/$(FILE_NAME).love *.lua assets/*.png
+	zip -9 dist/$(FILE_NAME).love *.lua assets/*
 
 dist-win: dist/$(FILE_NAME).love
 	mkdir -p dist/$(FILE_NAME)-win32

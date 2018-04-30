@@ -19,14 +19,11 @@
 
 (define flux :hidden (require "flux"))
 (define flux/update (.> flux :update))
-(define flux/to (.> flux :to))
 
 (define fonts '())
 (define font-index :mutable 1)
 (define last-font-time :mutable (get-time))
 
-(defun get-x (body) (self body :getX))
-(defun get-y (body) (self body :getY))
 
 (define dog-home-x 192)
 (define dog-home-y 600)
@@ -625,8 +622,7 @@
         (love/graphics/set-color 1 0 0 1)
         (love/graphics/set-color 1 1 1 1))
 
-      (love/graphics/print option 250 (+ 400 (* 100 index)))
-      )
+      (love/graphics/print option 250 (+ 400 (* 100 index))))
 
     ; reset color for others
     (love/graphics/set-color 1 1 1 1)))
@@ -666,7 +662,7 @@
             (sheet (.> food-sheets (.> food :sheet-key))) ]
         (when (not (self body :isDestroyed))
           (self anim :draw
-                sheet (get-x body) (get-y body) 0 1 1 32 32))))
+                sheet (body/get-x body) (body/get-y body) 0 1 1 32 32))))
 
 
     ; must set color back to white at end of draw

@@ -1,5 +1,8 @@
 (import lua/math (sqrt floor random))
 
+(define flux :hidden (require "flux"))
+(define flux/to (.> flux :to))
+
 (defmacro pself (obj key &args)
   `(cdr (list (pcall (.> ,obj ,key) ,obj ,@args))))
 
@@ -44,3 +47,8 @@
      (self (self (flux/to ,obj ,time ,newobj)
                  :oncomplete ,next)
            :ease "sineinout")))
+
+
+; self-wrappers
+(defun body/get-x (body) (self body :getX))
+(defun body/get-y (body) (self body :getY))

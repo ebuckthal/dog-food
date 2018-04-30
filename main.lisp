@@ -296,11 +296,13 @@
 
 (define dog-sheet (import-sheet "assets/dog-e-dog4x.png"))
 
-(define sounds {
-  :throw (love/audio/new-source "assets/throw.wav" "static")
-  :eat (love/audio/new-source "assets/eat.wav" "static")
-  :splat (love/audio/new-source "assets/splat.wav" "static")
-  })
+(define sounds
+  {:throw (love/audio/new-source "assets/throw.wav" "static")
+   :eat (love/audio/new-source "assets/eat.wav" "static")
+   :splat (love/audio/new-source "assets/splat.wav" "static")
+   :music (love/audio/new-source "assets/catdogsong.wav" "static")})
+(self (.> sounds :music) :setLooping true)
+(self (.> sounds :music) :setVolume 0.2)
 
 (define grids {
   ;; assuming all food is 16x16 at 4x with 4 frames
@@ -509,9 +511,19 @@
 (define time-last-food :mutable nil)
 (define time-delta-food 1)
 
-
 (defun get-speed (body)
   (velocity-to-speed (pself body :getLinearVelocity)))
+
+(defun update-music ()
+  (when (not (= scene "game"))
+    (with (music (.> sounds :music))
+          (when (self music :isPlaying)
+            (self music :stop))))
+
+  (when (= scene "game")
+    (with (music (.> sounds :music))
+          (when (not (self music :isPlaying))
+            (self music :play)))))
 
 (defevent :update (dt)
   (when (= scene "title"))
@@ -545,7 +557,7 @@
     (when (love/keyboard/is-down "e")
       (set-angle (.> dog :body) 0.1 -1 1)))
 
-  )
+  (update-music))
 
 (define bg-sky (love/graphics/new-image "assets/sky.png"))
 (define bg-sun (love/graphics/new-image "assets/sun.png"))

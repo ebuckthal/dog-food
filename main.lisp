@@ -442,12 +442,6 @@
       (set! scene "title")))
   )
 
-(defmacro make-tween (name next obj time newobj)
-  `(defun ,name ()
-     (self (self (flux/to ,obj ,time ,newobj)
-                 :oncomplete ,next)
-           :ease "sineinout")))
-
 (define sun-position {:x 300 :y 0})
 (make-tween st1 st2
             sun-position
@@ -493,8 +487,12 @@
             {:x -50})
 
 (defevent :load ()
-  (push! fonts (love/graphics/new-image-font "assets/test-font1.png" " abcdefghijklmnopqrstuvwxyz0123456789.,'!?"))
-  (push! fonts (love/graphics/new-image-font "assets/test-font2.png" " abcdefghijklmnopqrstuvwxyz0123456789.,'!?"))
+  (push! fonts (love/graphics/new-image-font
+                 "assets/test-font1.png"
+                 " abcdefghijklmnopqrstuvwxyz0123456789.,'!?"))
+  (push! fonts (love/graphics/new-image-font
+                 "assets/test-font2.png"
+                 " abcdefghijklmnopqrstuvwxyz0123456789.,'!?"))
 
   (love/window/set-mode 800 800 { :display 2 })
   (love/physics/set-meter 192)

@@ -38,3 +38,9 @@
         (fn)
         (set! done true))))
   )
+
+(defmacro make-tween (name next obj time newobj)
+  `(defun ,name ()
+     (self (self (flux/to ,obj ,time ,newobj)
+                 :oncomplete ,next)
+           :ease "sineinout")))

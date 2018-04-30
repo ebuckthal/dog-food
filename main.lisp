@@ -361,9 +361,9 @@
     (love/audio/set-volume (- 1 (love/audio/get-volume))))
 
   (when (= scene "title")
-    (when (= key "down")
+    (when (or (= key "s") (= key "down"))
       (set! title-menu-index (title-menu-next-index 1)))
-    (when (= key "up")
+    (when (or (= key "w") (= key "up"))
       (set! title-menu-index (title-menu-next-index -1)))
     (when (= key "return")
       (when (= (nth title-menu-options title-menu-index) "new game")

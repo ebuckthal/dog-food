@@ -6,6 +6,7 @@
 (import love/keyboard)
 (import love/audio)
 (import love/timer ())
+(import lua/math (floor))
 
 ; import from helpers.lisp
 (import helpers ())
@@ -587,9 +588,17 @@
 
 (defun draw-ui ()
   (love/graphics/set-color 0 0 0 0.2)
-  (love/graphics/print score 22 22)
+  (love/graphics/print "time left" 20 20)
   (love/graphics/set-color 1 1 1 1)
-  (love/graphics/print score 20 20))
+  (love/graphics/print "time left" 22 22)
+  (love/graphics/set-color 0 0 0 0.2)
+  (love/graphics/print (floor remaining-time) 380 22)
+  (love/graphics/set-color 1 1 1 1)
+  (love/graphics/print (floor remaining-time) 380 22)
+  (love/graphics/set-color 0 0 0 0.2)
+  (love/graphics/print score 700 22)
+  (love/graphics/set-color 1 1 1 1)
+  (love/graphics/print score 700 20))
 
 (defun draw-menu ()
   (do ([option title-menu-options])

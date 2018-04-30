@@ -69,3 +69,4 @@
 
 (defun body/apply-linear-impulse-vector (body v)
   (self body :applyLinearImpulse (.> v :x) (.> v :y)))
+

@@ -358,6 +358,11 @@
   (do [(food (exclude is-destroyed? (map (lambda (x) (.> x :body)) foods)))]
       (self food :setUserData true)))
 
+(defun reset-game ()
+  (set! score 0)
+  (set! remaining-time 30)
+  (destroy-all-food foods))
+
 (defun on-keypress (key is-repeat)
   (when (= key "m")
     (love/audio/set-volume (- 1 (love/audio/get-volume))))
@@ -377,8 +382,7 @@
 
   (when (= scene "game")
     (when (= key "escape")
-      (set! score 0)
-      (destroy-all-food foods)
+      (reset-game)
       (set! scene "title"))
     (when (= key "space")
       (when (= (.> dog :state) :closed)
@@ -410,9 +414,7 @@
 
   (when (= scene "game-over")
     (when (= key "escape")
-      ; reset the game
-      (set! remaining-time 30)
-      (set! score 0)
+      (reset-game)
 
       (set! scene "title")))
   )

@@ -621,7 +621,9 @@
 
   (when (= scene "credits")
     (draw-bg)
-    (love/graphics/print "credits here!" 40 240))
+    (love/graphics/print "eric buckthal" 40 240)
+    (love/graphics/print "massimo siboldi" 40 320)
+    (love/graphics/print "harmony dashut" 40 400))
 
   (when (= scene "game")
     (draw-bg)

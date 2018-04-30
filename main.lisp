@@ -416,6 +416,10 @@
   (when (= scene "credits")
     (when (= key "escape")
       (set! scene "title")))
+
+  (when (= scene "game-over")
+    (when (= key "escape")
+      (set! scene "title")))
   )
 
 (define sun-position {:x 300 :y 0})
@@ -645,9 +649,14 @@
           (self anim :draw
                 sheet (body/get-x body) (body/get-y body) 0 1 1 32 32))))
 
-
     ; must set color back to white at end of draw
     (love/graphics/set-color 1 1 1)
     (draw-fg)
     (draw-ui))
+
+  (when (= scene "game-over")
+    (draw-bg)
+    (love/graphics/print "game over!" 40 240)
+    (love/graphics/print score 40 320)
+    (love/graphics/print "foods eaten" 150 320))
 )

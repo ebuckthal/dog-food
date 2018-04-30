@@ -124,7 +124,7 @@
 (defun dog-catch-food (dog food-fixture)
   (.<! dog :has-food-type (.> (self food-fixture :getUserData) :food-type))
   (fixture-tell-body-to-die food-fixture)
-  )
+  (dog-advance-state dog))
 
 (defun dog-eat-food (dog)
   (set! score (+ score 1))

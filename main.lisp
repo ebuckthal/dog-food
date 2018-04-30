@@ -44,14 +44,12 @@
 (define title-menu-options '("new game" "how to play" "credits"))
 (define title-menu-index :mutable 1)
 
-
 (defun title-menu-next-index (delta)
   (let [(next-index (+ delta title-menu-index))]
     (cond
       [(> next-index (n title-menu-options)) title-menu-index]
       [(< next-index 1) title-menu-index]
-      [true next-index])
-    ))
+      [true next-index])))
 
 (defun new-ground ()
   (let* [(body (love/physics/new-body world (/ 800 2) 775 "static"))
@@ -132,6 +130,9 @@
 
 (defun dog-update (dt)
   (dog-maybe-catch-food dog)
+  (let* [(body (.> dog :body))
+         (cur-angle (self body :getAngle))]
+    (self body :applyAngularImpulse (* -1000 cur-angle)))
   (when (= :open (.> dog :state))
     (.<! dog :mouth-open-duration (+ (.> dog :mouth-open-duration) dt))
     (when (> (.> dog :mouth-open-duration) dog-open-mouth-time)

@@ -103,9 +103,17 @@
                        [:closing :closed]))]
     (set-dog-state dog next-state)))
 
-(defun dog-maybe-catch-food (dog food-fixture)
-  (when (and (= :open (.> dog :state)) (not (dog-has-food? dog)))
-    (dog-catch-food dog food-fixture)))
+(defun dog-maybe-catch-food (dog)
+  (when (and (= :open (.> dog :state))
+             (not (dog-has-food? dog)))
+    (map (lambda (contact)
+                 (let* [(fixtures (pself contact :getFixtures))
+                        (fix-a (car fixtures))
+                        (fix-b (cadr fixtures))]
+                   (collision-with
+                    :food :dog-mouth fix-a fix-b
+                    (lambda (food-fixture _) (dog-catch-food dog food-fixture)))))
+         (values (self (.> dog :body) :getContacts)))))
 
 (defun dog-has-food? (dog) (not (= nil (.> dog :has-food-type))))
 
@@ -119,6 +127,7 @@
   (.<! dog :has-food-type nil))
 
 (defun dog-update (dt)
+  (dog-maybe-catch-food dog)
   (when (= :open (.> dog :state))
     (.<! dog :mouth-open-duration (+ (.> dog :mouth-open-duration) dt))
     (when (> (.> dog :mouth-open-duration) dog-open-mouth-time)
@@ -378,9 +387,6 @@
 
 ; callback for collision detection
 (defun begin-contact (a b coll)
-  (collision-with
-   :food :dog-mouth a b
-   (lambda (food-fixture _) (dog-maybe-catch-food dog food-fixture)))
   (collision-with
    :food :dog a b
    (lambda () (self (.> sounds :splat) :play))))

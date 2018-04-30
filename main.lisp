@@ -222,13 +222,20 @@
     ; (shape (love/physics/new-circle-shape 32))
     (shape (apply
              love/physics/new-polygon-shape
-             (shift-vertices 0 -22
-              '((-30 0) (0 45) (30 0)))))
+             (shift-vertices 0 0
+              '((-30 12)
+                (-30 12)
+                (-12 30)
+                (12 30)
+                (30 12)
+                (30 -12)
+                (12 -30)
+                (-12 -30)))))
     (fixture (love/physics/new-fixture body shape))
     (anim (new-animation (.> frames :doughnut) 0.15))
     (sheet-key (sample (keys food-sheets)))]
 
-    (self fixture :setDensity 3)
+    (self fixture :setDensity 1.5)
     (self body :resetMassData)
     (self fixture :setFriction 0.9)
     (self body :applyLinearImpulse init-impulse-x init-impulse-y)
@@ -417,9 +424,6 @@
     (when (= key "return")
       (when (= (.> dog :state) :closed)
         (dog-advance-state dog)))
-    (when (= key "space")
-      ; (self (.> sounds :throw) :play)
-      (spawn-food))
     (when (= key "a")
       (body-impulse-vector (.> dog :body) { :x -60 :y 0 }))
     (when (= key "d")

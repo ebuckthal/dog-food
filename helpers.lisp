@@ -70,3 +70,6 @@
 (defun body/apply-linear-impulse-vector (body v)
   (self body :applyLinearImpulse (.> v :x) (.> v :y)))
 
+(defun fixture/get-body (fixture)
+  (self fixture :getBody))
+

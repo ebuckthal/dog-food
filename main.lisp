@@ -29,7 +29,7 @@
 (define font-delay-time 0.5)
 
 (define dog-home-x 192)
-(define dog-home-y 600)
+(define dog-home-y 500)
 
 ; game objects
 (define scene :mutable "title")
@@ -247,7 +247,7 @@
 
     (self fixture :setDensity 1.5)
     (self body :resetMassData)
-    (self fixture :setFriction 0.9)
+    (self fixture :setFriction 0.5)
     (self body :applyLinearImpulse init-impulse-x init-impulse-y)
     (self fixture :setUserData {:type :food :food-type sheet-key})
     (self body :setAngularVelocity 0.1)
@@ -338,7 +338,12 @@
 (defun begin-contact (a b coll)
   (collision-with
    :food :dog a b
-   (lambda () (self (.> sounds :splat) :play))))
+   (lambda (food-fixture)
+     (let [(speed (body/get-speed (fixture/get-body food-fixture)))]
+
+      (when (> speed 200)
+        (self (.> sounds :splat) :play))))
+   ))
 
 (defun on-keypress (key is-repeat)
   (when (= key "m")

@@ -56,7 +56,7 @@
       [true next-index])))
 
 (defun new-ground ()
-  (let* [(body (love/physics/new-body world (/ 800 2) 800 "static"))
+  (let* [(body (love/physics/new-body world (/ 800 2) 1000 "static"))
          (shape (love/physics/new-rectangle-shape 800 25))
          (fixture (love/physics/new-fixture body shape))]
    (self fixture :setUserData {:type :ground})
@@ -229,10 +229,10 @@
 
 (defun new-food ()
   (let* [
-    (init-x (random-range 700 900))
-    (init-y (random-range 500 700))
-    (init-impulse-x (random-range -80 -60))
-    (init-impulse-y (random-range -130 -110))
+    (init-x (random-range 600 900))
+    (init-y (random-range 400 800))
+    (init-impulse-x (random-range -100 -60))
+    (init-impulse-y (random-range -150 -100))
     (body (love/physics/new-body world init-x init-y "dynamic"))
     ; (shape (love/physics/new-circle-shape 32))
     (shape (apply
@@ -490,7 +490,7 @@
   (.<! love :keypressed on-keypress)
 
   ; setup callback for food spawning
-  (timer/on-percent-chance 0.5 0.5 (lambda () (spawn-food)))
+  (timer/on-percent-chance 0.5 0.25 (lambda () (spawn-food)))
 )
 
 (defun update-music ()

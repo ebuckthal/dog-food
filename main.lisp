@@ -38,7 +38,6 @@
 
 (define world :mutable nil)
 (define canvas :mutable nil)
-(define ground :mutable nil)
 (define dog :mutable nil)
 (define foods :mutable '())
 
@@ -56,9 +55,24 @@
 
 (defun new-ground ()
   (let* [(body (love/physics/new-body world (/ 800 2) 775 "static"))
-         (shape (love/physics/new-rectangle-shape 800 50))
+         (shape (love/physics/new-rectangle-shape 800 25))
          (fixture (love/physics/new-fixture body shape))]
    (self fixture :setUserData {:type :ground})
+   (self fixture :setFriction 0.9)
+   { :body body :shape shape :fixture fixture }))
+
+(defun new-left-wall ()
+  (let* [(body (love/physics/new-body world -100 (/ 800 2) "static"))
+         (shape (love/physics/new-rectangle-shape 50 800))
+         (fixture (love/physics/new-fixture body shape))]
+   (self fixture :setFriction 0.9)
+   { :body body :shape shape :fixture fixture }))
+
+(defun new-right-wall ()
+  (let* [(body (love/physics/new-body world -100 (/ 800 2) "static"))
+         (shape (love/physics/new-rectangle-shape 50 800))
+         (fixture (love/physics/new-fixture body shape))]
+   (self fixture :setFriction 0.9)
    { :body body :shape shape :fixture fixture }))
 
 (defun dog-open-mouth-stuff (dog)
@@ -197,12 +211,18 @@
     (init-impulse-x (random-range -50 -40))
     (init-impulse-y (random-range -100 -80))
     (body (love/physics/new-body world init-x init-y "dynamic"))
-    (shape (love/physics/new-circle-shape 32))
+    ; (shape (love/physics/new-circle-shape 32))
+    (shape (apply
+             love/physics/new-polygon-shape
+             (shift-vertices 0 -22
+              '((-30 0) (0 45) (30 0)))))
     (fixture (love/physics/new-fixture body shape))
     (anim (new-animation (.> frames :doughnut) 0.15))
     (sheet-key (sample (keys food-sheets)))]
 
-    (self fixture :setDensity 0.5)
+    (self fixture :setDensity 3)
+    (self body :resetMassData)
+    (self fixture :setFriction 0.9)
     (self body :applyLinearImpulse init-impulse-x init-impulse-y)
     (self fixture :setUserData {:type :food :food-type sheet-key})
     (self body :setAngularVelocity 0.1)
@@ -349,14 +369,20 @@
 (defun body-force-vector (body v)
   (self body :applyForce (.> v :x) (.> v :y)))
 
+(defun find-food-by-fixture (fixture)
+  (let [(index (find-index (lambda (food) (= (.> food :fixture) fixture)) foods))]
+    (if (nil? index)
+      nil
+      (nth foods index))))
+
 ; callback for collision detection
 (defun begin-contact (a b coll)
   (collision-with
    :food :dog-mouth a b
    (lambda (food-fixture _) (dog-maybe-catch-food dog food-fixture)))
-  (collision-with
-   :food :ground a b
-   (lambda (food-fixture _) (fixture-tell-body-to-die food-fixture)))
+  ; (collision-with
+  ;  :food :ground a b
+  ;  (lambda (food-fixture _) (fixture-tell-body-to-die food-fixture)))
   (collision-with
    :food :dog a b
    (lambda () (self (.> sounds :splat) :play))))
@@ -459,7 +485,9 @@
   (love/physics/set-meter 192)
 
   (set! world (love/physics/new-world 0 (* 9.81 192) true))
-  (set! ground (new-ground))
+  (new-left-wall)
+  (new-ground)
+  (new-right-wall)
   (set! dog (new-dog))
 
   ;; start some tweens
@@ -481,6 +509,10 @@
 (define time-last-food :mutable nil)
 (define time-delta-food 1)
 
+
+(defun get-speed (body)
+  (velocity-to-speed (pself body :getLinearVelocity)))
+
 (defevent :update (dt)
   (when (= scene "title"))
 
@@ -494,16 +526,19 @@
     (let [(v (scale-vector (body-vector-to (.> dog :body) dog-home-x dog-home-y) 3))]
       (self (.> dog :body) :applyForce (- 0 (.> v :x)) (- 0 (.> v :y))))
 
-    ; update food list, removing and destroying objects marked for destruction
-    (set! foods
-      (reduce
-        (lambda (foods food)
-          (self (.> food :anim) :update dt)
-          (case (self (.> food :body) :getUserData)
-            [nil (cons food foods)]
-            [true (self (.> food :body) :destroy) foods]))
-        '()
-        foods))
+    ; update food list, destroy if marked for destruction
+    ; pause animation if moving too slowly
+    (do [(food foods)]
+      (let* [(body (.> food :body))
+            (anim (.> food :anim))
+            (sheet (.> food-sheets (.> food :sheet-key)))]
+        (self anim :update dt)
+        (when (not (self body :isDestroyed))
+          (when (< (get-speed body) 100)
+            (self anim :pause))
+          (when (self body :getUserData)
+            (self body :destroy)))
+        ))
 
     (when (love/keyboard/is-down "q")
       (set-angle (.> dog :body) -0.1 -1 1))
@@ -604,20 +639,11 @@
     (do [(food foods)]
       (let* [(body (.> food :body))
             (anim (.> food :anim))
-            (sheet (.> food-sheets (.> food :sheet-key)))
-            (x (self body :getX))
-            (y (self body :getY))]
-        (self anim :draw sheet x y 0 1 1 32 32)))
+            (sheet (.> food-sheets (.> food :sheet-key))) ]
+        (when (not (self body :isDestroyed))
+          (self anim :draw
+                sheet (get-x body) (get-y body) 0 1 1 32 32))))
 
-    ;;(love/graphics/set-color 1 0 0 0.2)
-    ;;(love/graphics/circle "fill" dog-home-x dog-home-y 100)
-
-    (love/graphics/set-color 0.5 0.8 0.3)
-    (love/graphics/polygon
-      "fill"
-      (self (.> ground :body)
-            :getWorldPoints
-            (self (.> ground :shape) :getPoints)))
 
     ; must set color back to white at end of draw
     (love/graphics/set-color 1 1 1)

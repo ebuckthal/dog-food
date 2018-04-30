@@ -26,3 +26,15 @@
 
 (defun random-range (lower upper)
   (+ lower (* (- upper lower) (random))))
+
+(defun velocity-to-speed (velocity)
+  (sqrt (+ (* (nth velocity 1) (nth velocity 1))
+           (* (nth velocity 2) (nth velocity 2)))))
+
+(defun once (fn)
+  (let [(done false)]
+    (lambda ()
+      (when (not done)
+        (fn)
+        (set! done true))))
+  )

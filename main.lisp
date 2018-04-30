@@ -25,6 +25,8 @@
 (define font-index :mutable 1)
 (define last-font-time :mutable (get-time))
 
+; time to switch between fonts
+(define font-delay-time 0.5)
 
 (define dog-home-x 192)
 (define dog-home-y 600)
@@ -575,7 +577,8 @@
     (love/graphics/set-color 1 1 1 1)))
 
 (defevent :draw ()
-  (when (> (get-time) (+ 0.1 last-font-time))
+  ; do update for which font to draw
+  (when (> (get-time) (+ font-delay-time last-font-time))
     (set! font-index (if (= 1 font-index) 2 1))
     (set! last-font-time (get-time))
     (love/graphics/set-font (nth fonts font-index) 24))

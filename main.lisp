@@ -397,9 +397,6 @@
   (collision-with
    :food :dog-mouth a b
    (lambda (food-fixture _) (dog-maybe-catch-food dog food-fixture)))
-  ; (collision-with
-  ;  :food :ground a b
-  ;  (lambda (food-fixture _) (fixture-tell-body-to-die food-fixture)))
   (collision-with
    :food :dog a b
    (lambda () (self (.> sounds :splat) :play))))

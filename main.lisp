@@ -29,7 +29,10 @@
 (define font-delay-time 0.5)
 
 (define dog-home-x 192)
-(define dog-home-y 500)
+(define dog-home-y 400)
+
+; how much force applied on wasd
+(define dog-movement-impulse 100)
 
 ; game objects
 (define scene :mutable "title")
@@ -52,7 +55,7 @@
       [true next-index])))
 
 (defun new-ground ()
-  (let* [(body (love/physics/new-body world (/ 800 2) 775 "static"))
+  (let* [(body (love/physics/new-body world (/ 800 2) 900 "static"))
          (shape (love/physics/new-rectangle-shape 800 25))
          (fixture (love/physics/new-fixture body shape))]
    (self fixture :setUserData {:type :ground})
@@ -61,14 +64,14 @@
 
 (defun new-left-wall ()
   (let* [(body (love/physics/new-body world -100 (/ 800 2) "static"))
-         (shape (love/physics/new-rectangle-shape 50 800))
+         (shape (love/physics/new-rectangle-shape 50 1500))
          (fixture (love/physics/new-fixture body shape))]
    (self fixture :setFriction 0.9)
    { :body body :shape shape :fixture fixture }))
 
 (defun new-right-wall ()
-  (let* [(body (love/physics/new-body world -100 (/ 800 2) "static"))
-         (shape (love/physics/new-rectangle-shape 50 800))
+  (let* [(body (love/physics/new-body world 900 (/ 800 2) "static"))
+         (shape (love/physics/new-rectangle-shape 50 1500))
          (fixture (love/physics/new-fixture body shape))]
    (self fixture :setFriction 0.9)
    { :body body :shape shape :fixture fixture }))
@@ -225,10 +228,10 @@
 
 (defun new-food ()
   (let* [
-    (init-x (random-range 500 700))
+    (init-x (random-range 700 900))
     (init-y (random-range 500 700))
-    (init-impulse-x (random-range -50 -40))
-    (init-impulse-y (random-range -100 -80))
+    (init-impulse-x (random-range -80 -60))
+    (init-impulse-y (random-range -130 -110))
     (body (love/physics/new-body world init-x init-y "dynamic"))
     ; (shape (love/physics/new-circle-shape 32))
     (shape (apply
@@ -379,13 +382,21 @@
       (when (= (.> dog :state) :closed)
         (dog-advance-state dog)))
     (when (= key "a")
-      (body/apply-linear-impulse-vector (.> dog :body) { :x -60 :y 0 }))
+      (body/apply-linear-impulse-vector
+        (.> dog :body)
+        { :x (- 0 dog-movement-impulse) :y 0 }))
     (when (= key "d")
-      (body/apply-linear-impulse-vector (.> dog :body) { :x 60 :y 0 }))
+      (body/apply-linear-impulse-vector
+        (.> dog :body)
+        { :x dog-movement-impulse :y 0 }))
     (when (= key "w")
-      (body/apply-linear-impulse-vector (.> dog :body) { :x 0 :y -60 }))
+      (body/apply-linear-impulse-vector
+        (.> dog :body)
+        { :x 0 :y (- 0 dog-movement-impulse) }))
     (when (= key "s")
-      (body/apply-linear-impulse-vector (.> dog :body) { :x 0 :y 60 })))
+      (body/apply-linear-impulse-vector
+        (.> dog :body)
+        { :x 0 :y dog-movement-impulse })))
 
   (when (= scene "how-to")
     (when (= key "escape")

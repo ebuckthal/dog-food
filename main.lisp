@@ -317,6 +317,7 @@
    :music (love/audio/new-source "assets/catdogsong.wav" "static")})
 (self (.> sounds :music) :setLooping true)
 (self (.> sounds :music) :setVolume 0.2)
+(self (.> sounds :splat) :setVolume 0.3)
 
 (define grids {
   ;; assuming all food is 16x16 at 4x with 4 frames

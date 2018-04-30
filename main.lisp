@@ -279,6 +279,7 @@
 (define sounds {
   :throw (love/audio/new-source "assets/throw.wav" "static")
   :eat (love/audio/new-source "assets/eat.wav" "static")
+  :splat (love/audio/new-source "assets/splat.wav" "static")
   })
 
 (define grids {
@@ -355,7 +356,10 @@
    (lambda (food-fixture _) (dog-maybe-catch-food dog food-fixture)))
   (collision-with
    :food :ground a b
-   (lambda (food-fixture _) (fixture-tell-body-to-die food-fixture))))
+   (lambda (food-fixture _) (fixture-tell-body-to-die food-fixture)))
+  (collision-with
+   :food :dog a b
+   (lambda () (self (.> sounds :splat) :play))))
 
 (defun on-keypress (key is-repeat)
   (when (= scene "title")

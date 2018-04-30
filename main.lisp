@@ -597,14 +597,14 @@
 
       ; draw a little shadow
       (love/graphics/set-color 0 0 0 0.2)
-      (love/graphics/print option 252 (+ 402 (* 100 index)))
+      (love/graphics/print option 242 (+ 462 (* 80 index)))
 
       ; set color red if selected
       (if (= title-menu-index index)
         (love/graphics/set-color 1 0 0 1)
         (love/graphics/set-color 1 1 1 1))
 
-      (love/graphics/print option 250 (+ 400 (* 100 index))))
+      (love/graphics/print option 240 (+ 460 (* 80 index))))
 
     ; reset color for others
     (love/graphics/set-color 1 1 1 1)))

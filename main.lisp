@@ -38,6 +38,7 @@
 (define scene :mutable "title")
 
 (define score :mutable 0)
+(define remaining-time :mutable 30)
 
 (define world :mutable nil)
 (define canvas :mutable nil)
@@ -408,6 +409,10 @@
 
   (when (= scene "game-over")
     (when (= key "escape")
+      ; reset the game
+      (set! remaining-time 30)
+      (set! score 0)
+
       (set! scene "title")))
   )
 
@@ -509,6 +514,7 @@
     (dog-update dt)
 
     (timer/update dt)
+    (set! remaining-time (- remaining-time dt))
 
     ; push the dog back to its home by applying force in opposite direction
 
@@ -536,7 +542,11 @@
     (when (love/keyboard/is-down "j")
       (set-angle (.> dog :body) -0.1 -1 1))
     (when (love/keyboard/is-down "k")
-      (set-angle (.> dog :body) 0.1 -1 1)))
+      (set-angle (.> dog :body) 0.1 -1 1))
+
+    ; game over logic
+    (when (<=(- remaining-time dt) 0)
+      (set! scene "game-over")))
 
   (update-music))
 

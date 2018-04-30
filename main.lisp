@@ -113,7 +113,8 @@
                    (collision-with
                     :food :dog-mouth fix-a fix-b
                     (lambda (food-fixture _) (dog-catch-food dog food-fixture)))))
-         (values (self (.> dog :body) :getContacts)))))
+         (filter (lambda (contact) (self contact :isTouching))
+                 (values (self (.> dog :body) :getContacts))))))
 
 (defun dog-has-food? (dog) (not (= nil (.> dog :has-food-type))))
 

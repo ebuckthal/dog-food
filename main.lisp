@@ -614,6 +614,17 @@
   (love/graphics/print "m to mute the sound!" 40 400)
   (love/graphics/print "esc back to title!" 40 480))
 
+(defun draw-credits ()
+  (love/graphics/set-color 0 0 0 0.5)
+  (love/graphics/print "eric buckthal" 42 242)
+  (love/graphics/print "massimo siboldi" 42 322)
+  (love/graphics/print "harmony dashut" 42 402)
+
+  (love/graphics/set-color 1 1 1 1)
+  (love/graphics/print "eric buckthal" 40 240)
+  (love/graphics/print "massimo siboldi" 40 320)
+  (love/graphics/print "harmony dashut" 40 400))
+
 (defevent :draw ()
   ; do update for which font to draw
   (when (> (get-time) (+ font-delay-time last-font-time))
@@ -632,14 +643,11 @@
 
   (when (= scene "credits")
     (draw-bg)
-    (love/graphics/print "eric buckthal" 40 240)
-    (love/graphics/print "massimo siboldi" 40 320)
-    (love/graphics/print "harmony dashut" 40 400))
+    (draw-credits))
 
   (when (= scene "game")
     (draw-bg)
     (draw-dog dog)
-    ;;(draw-shapes (.> dog :body))
 
     ; just draw all foods
     (do [(food foods)]
